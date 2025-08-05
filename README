@@ -1,0 +1,35 @@
+# Bigtable JDBC
+
+`bigtable-jdbc` is a [JDBC Driver](https://docs.oracle.com/javase/8/docs/technotes/guides/jdbc/) for [Google Bigtable](https://cloud.google.com/bigtable?hl=en).
+
+You can create a JDBC connection easily for a variety of authentication types. For instance for an accessTokenProviderFQCN in connection URL:
+
+```
+package org.example;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class Main {
+  private static final String projectId = "test-project";
+  private static final String instanceId = "test-instance";
+  private static final String appProfileId = "test";
+  private static final String endpoint = "test-endpoint";
+  private static final String accessTokenProviderFQCN = "org.example.MyCustomImplementation";
+
+  public static void main(String[] args) {
+    try {
+      // load the class so that it registers itself
+      Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
+      String url = String.format(
+        "jdbc:bigtable:/projectId/%s/instances/%s?app_profile_id=%s?endpoint=%s&accessTokenProviderFQCN=%s",
+        projectId, instanceId, appProfileId, endpoint, accessTokenProviderFQCN);
+      Connection connection = DriverManager.getConnection(url);
+      // perform SQL against Bigtable now!
+    } catch (SQLException | ClassNotFoundException e) {
+      e.printStackTrace();
+    }
+  }
+}
+```

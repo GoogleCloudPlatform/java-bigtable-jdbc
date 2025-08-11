@@ -3,6 +3,7 @@ package com.google.cloud.bigtable.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -15,6 +16,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
 import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
@@ -160,6 +162,59 @@ public class BigtableConnectionTest {
   }
 
   @Test
+  public void testSetClientInfoProperties() throws SQLException {
+    BigtableConnection connection = createConnection();
+    Properties properties = new Properties();
+    properties.setProperty("test", "test");
+    connection.setClientInfo(properties);
+    assertNull(connection.getClientInfo("test"));
+    assertNotNull(connection.getWarnings());
+    assertEquals(
+        "Client info properties are not supported.", connection.getWarnings().getMessage());
+  }
+
+  @Test
+  public void testSetClientInfoWithNameAndValue() throws SQLException {
+    BigtableConnection connection = createConnection();
+    connection.setClientInfo("test", "test");
+    assertNull(connection.getClientInfo("test"));
+    assertNotNull(connection.getWarnings());
+    assertEquals(
+        "Client info properties are not supported.", connection.getWarnings().getMessage());
+  }
+
+  @Test
+  public void testGetClientInfo() throws SQLException {
+    BigtableConnection connection = createConnection();
+    assertNull(connection.getClientInfo());
+    assertNull(connection.getClientInfo("name"));
+  }
+
+  @Test
+  public void testWarnings() throws SQLException {
+    BigtableConnection connection = createConnection();
+    assertNull(connection.getWarnings());
+
+    SQLWarning warning1 = new SQLWarning("Warning 1");
+    connection.pushWarning(warning1);
+    assertEquals(warning1, connection.getWarnings());
+
+    SQLWarning warning2 = new SQLWarning("Warning 2");
+    connection.pushWarning(warning2);
+    assertEquals(warning1, connection.getWarnings());
+    assertEquals(warning2, connection.getWarnings().getNextWarning());
+
+    connection.clearWarnings();
+    assertNull(connection.getWarnings());
+  }
+
+  @Test
+  public void testIsReadOnly() throws SQLException {
+    Connection connection = createConnection();
+    assertTrue(connection.isReadOnly());
+  }
+
+  @Test
   public void testUnsupportedFeatures() {
     assertThrows(
         SQLFeatureNotSupportedException.class,
@@ -242,12 +297,6 @@ public class BigtableConnectionTest {
         () -> {
           Connection connection = createConnection();
           connection.setCatalog("test");
-        });
-    assertThrows(
-        RuntimeException.class,
-        () -> {
-          Connection connection = createConnection();
-          connection.setClientInfo("test", "test");
         });
     assertThrows(
         SQLFeatureNotSupportedException.class,

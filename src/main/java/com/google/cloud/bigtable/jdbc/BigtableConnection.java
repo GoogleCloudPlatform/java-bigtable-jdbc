@@ -52,6 +52,7 @@ public class BigtableConnection implements Connection {
   private static final Set<String> SUPPORTED_KEYS =
       new HashSet<>(Arrays.asList("app_profile_id", "universe_domain"));
   private final IBigtableClientFactory bigtableClientFactory;
+  private SQLWarning warnings;
 
   public BigtableConnection(String url, Properties info) throws SQLException {
     this(url, info, null);
@@ -219,11 +220,28 @@ public class BigtableConnection implements Connection {
 
   @Override
   public SQLWarning getWarnings() throws SQLException {
-    return null;
+    checkClosed();
+    return warnings;
   }
 
   @Override
-  public void clearWarnings() throws SQLException {}
+  public void clearWarnings() throws SQLException {
+    checkClosed();
+    warnings = null;
+  }
+
+  /**
+   * Add a warning to the chain of warnings.
+   *
+   * @param warning The warning to be added.
+   */
+  public void pushWarning(SQLWarning warning) {
+    if (this.warnings == null) {
+      this.warnings = warning;
+    } else {
+      this.warnings.setNextWarning(warning);
+    }
+  }
 
   @Override
   public Statement createStatement(int resultSetType, int resultSetConcurrency)
@@ -387,32 +405,40 @@ public class BigtableConnection implements Connection {
     return true;
   }
 
+  /**
+   * This driver does not use any client info properties. A {@link SQLWarning} will also be
+   * generated.
+   *
+   * @param name The name of the client info property to set.
+   * @param value The value to set the client info property to.
+   */
   @Override
   public void setClientInfo(String name, String value) throws SQLClientInfoException {
-    try {
-      throw new SQLFeatureNotSupportedException(" is not supported");
-    } catch (SQLFeatureNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
+    SQLWarning warning = new SQLWarning("Client info properties are not supported.");
+    this.pushWarning(warning);
   }
 
+  /**
+   * This driver does not use any client info properties.
+   *
+   * @param properties The list of client info properties to set.
+   */
   @Override
   public void setClientInfo(Properties properties) throws SQLClientInfoException {
-    try {
-      throw new SQLFeatureNotSupportedException("setClientInfo is not supported");
-    } catch (SQLFeatureNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
+    SQLWarning warning = new SQLWarning("Client info properties are not supported.");
+    this.pushWarning(warning);
   }
 
   @Override
   public String getClientInfo(String name) throws SQLException {
-    throw new SQLFeatureNotSupportedException("getClientInfo is not supported");
+    checkClosed();
+    return null;
   }
 
   @Override
   public Properties getClientInfo() throws SQLException {
-    throw new SQLFeatureNotSupportedException("getClientInfo is not supported");
+    checkClosed();
+    return null;
   }
 
   @Override

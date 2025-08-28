@@ -149,11 +149,15 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
   @Override
   public ResultSet executeQuery() throws SQLException {
     checkClosed();
-    com.google.cloud.bigtable.data.v2.models.sql.ResultSet resultSet = prepareQuery();
-    this.resultSets.clear();
-    this.resultSets.add(new BigtableResultSet(resultSet));
-    this.currentResultIndex = 0;
-    return this.resultSets.get(0);
+    try {
+      com.google.cloud.bigtable.data.v2.models.sql.ResultSet resultSet = prepareQuery();
+      this.resultSets.clear();
+      this.resultSets.add(new BigtableResultSet(resultSet));
+      this.currentResultIndex = 0;
+      return this.resultSets.get(0);
+    } catch (Exception e) {
+      throw new SQLException("Failed to execute query: " + e.getMessage(), e);
+    }
   }
 
   private com.google.cloud.bigtable.data.v2.models.sql.ResultSet prepareQuery() {
@@ -434,7 +438,7 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
 
       @Override
       public boolean isSigned(int param) throws SQLException {
-        Parameter parameter = parameters.get(param - 1);
+        Parameter parameter = parameters.get(param);
         if (parameter == null) {
           throw new SQLException("Parameter not found: " + param);
         }
@@ -456,7 +460,7 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
       public int getPrecision(int param) throws SQLException {
         checkClosed();
 
-        Parameter parameter = parameters.get(param - 1);
+        Parameter parameter = parameters.get(param);
         if (parameter == null) {
           throw new SQLException("Parameter not found: " + param);
         }
@@ -486,7 +490,7 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
       public int getScale(int param) throws SQLException {
         checkClosed();
 
-        Parameter parameter = parameters.get(param - 1);
+        Parameter parameter = parameters.get(param);
         if (parameter == null) {
           throw new SQLException("Parameter not found: " + param);
         }
@@ -507,12 +511,18 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
       @Override
       public int getParameterType(int param) throws SQLException {
         Parameter parameter = parameters.get(param);
+        if (parameter == null) {
+          throw new SQLException("Parameter not found: " + param);
+        }
         return SqlTypeEnum.fromLabel(parameter.getTypeLabel()).getSqlTypeCode();
       }
 
       @Override
       public String getParameterTypeName(int param) throws SQLException {
         Parameter parameter = parameters.get(param);
+        if (parameter == null) {
+          throw new SQLException("Parameter not found: " + param);
+        }
         SqlType<?> sqlType = SqlTypeEnum.fromLabel(parameter.getTypeLabel()).getSqlType();
         return sqlType.toString();
       }
@@ -520,6 +530,9 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
       @Override
       public String getParameterClassName(int param) throws SQLException {
         Parameter parameter = parameters.get(param);
+        if (parameter == null) {
+          throw new SQLException("Parameter not found: " + param);
+        }
         return SqlTypeEnum.fromLabel(parameter.getTypeLabel()).getJavaClassName();
       }
 

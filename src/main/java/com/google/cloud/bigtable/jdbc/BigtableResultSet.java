@@ -14,9 +14,6 @@
 
 package com.google.cloud.bigtable.jdbc;
 
-import com.google.cloud.bigtable.data.v2.models.sql.ColumnMetadata;
-import com.google.cloud.bigtable.data.v2.models.sql.ResultSet;
-import com.google.cloud.bigtable.data.v2.models.sql.SqlType;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -40,9 +37,13 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import com.google.cloud.bigtable.data.v2.models.sql.ColumnMetadata;
+import com.google.cloud.bigtable.data.v2.models.sql.ResultSet;
+import com.google.cloud.bigtable.data.v2.models.sql.SqlType;
 
 public class BigtableResultSet implements java.sql.ResultSet {
-  private final ResultSet bigtableResultSet;
+  // Bigtable data result set is 0 index.
+  private final ResultSet btDataResultSet;
   private List<Map<String, Object>> rows;
   private int currentRow = -1;
   private boolean lastValueWasNull = false;
@@ -51,13 +52,21 @@ public class BigtableResultSet implements java.sql.ResultSet {
   private boolean closed = false;
 
   public BigtableResultSet(ResultSet bigtableResultSet) {
-    this.bigtableResultSet = bigtableResultSet;
+    this.btDataResultSet = bigtableResultSet;
   }
 
   public BigtableResultSet(ResultSet bigtableResultSet, List<Map<String, Object>> rows) {
-    this.bigtableResultSet = bigtableResultSet;
+    this.btDataResultSet = bigtableResultSet;
     this.rows = rows;
     this.currentRow = -1;
+  }
+
+  private int toBigtableDataResultSetIndex(int oneIndex) {
+    return oneIndex - 1;
+  }
+
+  private int toJDBCResultSetIndex(int zeroBasedIndex) {
+    return zeroBasedIndex + 1;
   }
 
   private Object getTypedValue(ResultSet resultSet, ColumnMetadata column) throws SQLException {
@@ -133,7 +142,7 @@ public class BigtableResultSet implements java.sql.ResultSet {
   public boolean next() throws SQLException {
     checkClosed();
     hasMoved = true;
-    boolean hasNext = bigtableResultSet.next();
+    boolean hasNext = btDataResultSet.next();
     isAfterLast = !hasNext;
     return hasNext;
   }
@@ -146,8 +155,8 @@ public class BigtableResultSet implements java.sql.ResultSet {
     closed = true;
 
     try {
-      if (bigtableResultSet != null) {
-        bigtableResultSet.close();
+      if (btDataResultSet != null) {
+        btDataResultSet.close();
       }
     } catch (Exception ignored) {
 
@@ -164,101 +173,119 @@ public class BigtableResultSet implements java.sql.ResultSet {
   public String getString(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return null;
     }
     lastValueWasNull = false;
-    return bigtableResultSet.getString(columnIndex);
+    return btDataResultSet.getString(bigtableDataResultSetIndex);
   }
 
   @Override
   public boolean getBoolean(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return false;
     }
 
     lastValueWasNull = false;
-    return bigtableResultSet.getBoolean(columnIndex);
+    return btDataResultSet.getBoolean(bigtableDataResultSetIndex);
   }
 
   @Override
   public byte getByte(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return 0;
     }
 
     lastValueWasNull = false;
-    return (byte) bigtableResultSet.getLong(columnIndex);
+    return (byte) btDataResultSet.getLong(bigtableDataResultSetIndex);
   }
 
   @Override
   public short getShort(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return 0;
     }
 
     lastValueWasNull = false;
-    return (short) bigtableResultSet.getLong(columnIndex);
+    return (short) btDataResultSet.getLong(bigtableDataResultSetIndex);
   }
 
   @Override
   public int getInt(int columnIndex) throws SQLException {
     checkClosed();
-    if (bigtableResultSet.isNull(columnIndex)) {
+
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return 0;
     }
 
     lastValueWasNull = false;
-    return Math.toIntExact(bigtableResultSet.getLong(columnIndex));
+    return Math.toIntExact(btDataResultSet.getLong(bigtableDataResultSetIndex));
   }
 
   @Override
   public long getLong(int columnIndex) throws SQLException {
     checkClosed();
-    if (bigtableResultSet.isNull(columnIndex)) {
+
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return 0L;
     }
 
     lastValueWasNull = false;
-    return bigtableResultSet.getLong(columnIndex);
+    return btDataResultSet.getLong(bigtableDataResultSetIndex);
   }
 
   @Override
   public float getFloat(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return 0.0F;
     }
 
     lastValueWasNull = false;
-    return bigtableResultSet.getFloat(columnIndex);
+    return btDataResultSet.getFloat(bigtableDataResultSetIndex);
   }
 
   @Override
   public double getDouble(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return 0.0;
     }
 
     lastValueWasNull = false;
-    return bigtableResultSet.getDouble(columnIndex);
+    return btDataResultSet.getDouble(bigtableDataResultSetIndex);
   }
 
   @Override
@@ -270,26 +297,31 @@ public class BigtableResultSet implements java.sql.ResultSet {
   public byte[] getBytes(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return null;
     }
 
     lastValueWasNull = false;
-    return bigtableResultSet.getBytes(columnIndex).toByteArray();
+    return btDataResultSet.getBytes(bigtableDataResultSetIndex).toByteArray();
   }
 
   @Override
   public Date getDate(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return null;
     }
 
     lastValueWasNull = false;
-    return java.sql.Date.valueOf(bigtableResultSet.getDate(columnIndex).toString());
+    Instant instant = btDataResultSet.getTimestamp(bigtableDataResultSetIndex);
+    return java.sql.Date.valueOf(instant.atZone(java.time.ZoneId.systemDefault()).toLocalDate());
   }
 
   @Override
@@ -301,13 +333,15 @@ public class BigtableResultSet implements java.sql.ResultSet {
   public Timestamp getTimestamp(int columnIndex) throws SQLException {
     checkClosed();
 
-    if (bigtableResultSet.isNull(columnIndex)) {
+    int bigtableDataResultSetIndex = toBigtableDataResultSetIndex(columnIndex);
+
+    if (btDataResultSet.isNull(bigtableDataResultSetIndex)) {
       lastValueWasNull = true;
       return null;
     }
 
     lastValueWasNull = false;
-    Instant instant = bigtableResultSet.getTimestamp(columnIndex);
+    Instant instant = btDataResultSet.getTimestamp(bigtableDataResultSetIndex);
     return java.sql.Timestamp.from(instant);
   }
 
@@ -330,7 +364,8 @@ public class BigtableResultSet implements java.sql.ResultSet {
   public String getString(String columnLabel) throws SQLException {
     checkClosed();
     try {
-      int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+      int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+      int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
       String value = getString(columnIndex);
       lastValueWasNull = (value == null);
       return value;
@@ -342,49 +377,56 @@ public class BigtableResultSet implements java.sql.ResultSet {
   @Override
   public boolean getBoolean(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getBoolean(columnIndex);
   }
 
   @Override
   public byte getByte(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getByte(columnIndex);
   }
 
   @Override
   public short getShort(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getShort(columnIndex);
   }
 
   @Override
   public int getInt(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getInt(columnIndex);
   }
 
   @Override
   public long getLong(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getLong(columnIndex);
   }
 
   @Override
   public float getFloat(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getFloat(columnIndex);
   }
 
   @Override
   public double getDouble(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getDouble(columnIndex);
   }
 
@@ -396,14 +438,16 @@ public class BigtableResultSet implements java.sql.ResultSet {
   @Override
   public byte[] getBytes(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getBytes(columnIndex);
   }
 
   @Override
   public Date getDate(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getDate(columnIndex);
   }
 
@@ -415,7 +459,8 @@ public class BigtableResultSet implements java.sql.ResultSet {
   @Override
   public Timestamp getTimestamp(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
     return getTimestamp(columnIndex);
   }
 
@@ -449,27 +494,31 @@ public class BigtableResultSet implements java.sql.ResultSet {
 
   @Override
   public ResultSetMetaData getMetaData() throws SQLException {
-    return new BigtableResultSetMetaData(bigtableResultSet.getMetadata().getColumns());
+    return new BigtableResultSetMetaData(btDataResultSet.getMetadata().getColumns());
   }
 
   @Override
   public Object getObject(int columnIndex) throws SQLException {
     checkClosed();
-    int zeroBasedIndex = columnIndex - 1;
+    if (btDataResultSet == null) {
+      throw new SQLException("Result set is null");
+    }
+    int zeroBasedIndex = toBigtableDataResultSetIndex(columnIndex);
 
-    if (zeroBasedIndex < 0
-        || zeroBasedIndex >= bigtableResultSet.getMetadata().getColumns().size()) {
+    if (zeroBasedIndex < 0 || zeroBasedIndex >= btDataResultSet.getMetadata().getColumns().size()) {
       throw new SQLException("Invalid column index: " + columnIndex);
     }
 
-    ColumnMetadata column = bigtableResultSet.getMetadata().getColumns().get(zeroBasedIndex);
-    return getTypedValue(bigtableResultSet, column);
+    ColumnMetadata column = btDataResultSet.getMetadata().getColumns().get(zeroBasedIndex);
+    return getTypedValue(btDataResultSet, column);
   }
 
   @Override
   public Object getObject(String columnLabel) throws SQLException {
     checkClosed();
-    int columnIndex = bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+    int zeroBasedIndex = btDataResultSet.getMetadata().getColumnIndex(columnLabel);
+    int columnIndex = toJDBCResultSetIndex(zeroBasedIndex);
+
     return getObject(columnIndex);
   }
 
@@ -477,7 +526,7 @@ public class BigtableResultSet implements java.sql.ResultSet {
   public int findColumn(String columnLabel) throws SQLException {
     checkClosed();
     try {
-      return bigtableResultSet.getMetadata().getColumnIndex(columnLabel);
+      return toJDBCResultSetIndex(btDataResultSet.getMetadata().getColumnIndex(columnLabel));
     } catch (RuntimeException e) {
       throw new SQLException("Column not found: " + columnLabel);
     }

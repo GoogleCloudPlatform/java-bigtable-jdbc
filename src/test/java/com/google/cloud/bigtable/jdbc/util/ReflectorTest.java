@@ -62,4 +62,57 @@ public class ReflectorTest {
     TestClass deserialized = Reflector.verifySerialization(original);
     assertEquals(original, deserialized);
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateVerifiedInstanceClassNotFound() {
+    Reflector.createVerifiedInstance("non.existent.class", Object.class);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateVerifiedInstanceNoSuchMethod() {
+    Reflector.createVerifiedInstance(
+        "com.google.cloud.bigtable.jdbc.util.ReflectorTest$TestClass", TestClass.class, 123);
+  }
+
+  public abstract static class AbstractTestClass implements Serializable {
+    public AbstractTestClass() {}
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateVerifiedInstanceInstantiationException() {
+    Reflector.createVerifiedInstance(
+        "com.google.cloud.bigtable.jdbc.util.ReflectorTest$AbstractTestClass",
+        AbstractTestClass.class);
+  }
+
+  public static class PrivateConstructorTestClass implements Serializable {
+    private PrivateConstructorTestClass() {}
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateVerifiedInstanceIllegalAccessException() {
+    Reflector.createVerifiedInstance(
+        "com.google.cloud.bigtable.jdbc.util.ReflectorTest$PrivateConstructorTestClass",
+        PrivateConstructorTestClass.class);
+  }
+
+  public static class ExceptionInConstructorTestClass implements Serializable {
+    public ExceptionInConstructorTestClass() {
+      throw new RuntimeException("test exception");
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testCreateVerifiedInstanceInvocationTargetException() {
+    Reflector.createVerifiedInstance(
+        "com.google.cloud.bigtable.jdbc.util.ReflectorTest$ExceptionInConstructorTestClass",
+        ExceptionInConstructorTestClass.class);
+  }
+
+  public static class NotSerializableClass {}
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testVerifySerializationNotSerializable() {
+    Reflector.verifySerialization(new NotSerializableClass());
+  }
 }

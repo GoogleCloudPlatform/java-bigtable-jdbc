@@ -375,4 +375,124 @@ public class BigtablePreparedStatementTest {
           statement.setQueryTimeout(100);
         });
   }
+
+  @Test
+  public void testGetParameterMetaData_Detailed() throws SQLException {
+    BigtablePreparedStatement statement = createStatement();
+    statement.setString(1, "test");
+    statement.setLong(2, 123L);
+    statement.setDouble(3, 1.23);
+    statement.setBoolean(4, true);
+    statement.setBytes(5, new byte[0]);
+    statement.setDate(6, new java.sql.Date(0));
+    statement.setTimestamp(7, new Timestamp(0));
+    statement.setFloat(8, 1.23f);
+
+    java.sql.ParameterMetaData metaData = statement.getParameterMetaData();
+    assertEquals(8, metaData.getParameterCount());
+
+    // Test type names and classes
+    assertEquals("STRING", metaData.getParameterTypeName(1));
+    assertEquals(String.class.getName(), metaData.getParameterClassName(1));
+    assertEquals("INT64", metaData.getParameterTypeName(2));
+    assertEquals(Long.class.getName(), metaData.getParameterClassName(2));
+    assertEquals("FLOAT64", metaData.getParameterTypeName(3));
+    assertEquals(Double.class.getName(), metaData.getParameterClassName(3));
+    assertEquals("FLOAT32", metaData.getParameterTypeName(8));
+    assertEquals(Float.class.getName(), metaData.getParameterClassName(8));
+
+    // Test precision and scale
+    assertEquals(Integer.MAX_VALUE, metaData.getPrecision(1));
+    assertEquals(10, metaData.getPrecision(2));
+    assertEquals(53, metaData.getPrecision(3));
+    assertEquals(15, metaData.getScale(3));
+    assertEquals(24, metaData.getPrecision(8));
+    assertEquals(7, metaData.getScale(8));
+
+    // Test signed
+    assertEquals(false, metaData.isSigned(1));
+    assertEquals(true, metaData.isSigned(2));
+    assertEquals(true, metaData.isSigned(3));
+    assertEquals(true, metaData.isSigned(8));
+
+    // Test nullable and mode
+    assertEquals(java.sql.ParameterMetaData.parameterNullable, metaData.isNullable(1));
+    assertEquals(java.sql.ParameterMetaData.parameterModeIn, metaData.getParameterMode(1));
+
+    // Test invalid parameter index
+    assertThrows(SQLException.class, () -> metaData.getParameterType(9));
+  }
+
+  @Test
+  public void testSetNullUnsupportedType() {
+    assertThrows(
+        SQLException.class,
+        () -> {
+          PreparedStatement statement = createStatement();
+          statement.setNull(1, java.sql.Types.ARRAY);
+        });
+  }
+
+  @Test
+  public void testSetDateWithNullCalendar() throws SQLException {
+    PreparedStatement statement = createStatement();
+    statement.setDate(1, new java.sql.Date(new Date().getTime()), null);
+  }
+
+  @Test
+  public void testSetTimestampWithNullCalendar() throws SQLException {
+    PreparedStatement statement = createStatement();
+    statement.setTimestamp(1, new Timestamp(new Date().getTime()), null);
+  }
+
+  @Test
+  public void testSetArrayNull() {
+    assertThrows(
+        SQLException.class,
+        () -> {
+          PreparedStatement statement = createStatement();
+          statement.setArray(1, null);
+        });
+  }
+
+  @Test
+  public void testExecuteWithEmptySql() {
+    assertThrows(
+        SQLException.class,
+        () -> {
+          BigtablePreparedStatement statement =
+              new BigtablePreparedStatement(mockConnection, " ", mockDataClient);
+          statement.execute();
+        });
+  }
+
+  @Test
+  public void testExecuteQueryFails() {
+    when(mockDataClient.prepareStatement(any(), any())).thenThrow(new RuntimeException("test"));
+    assertThrows(
+        SQLException.class,
+        () -> {
+          PreparedStatement statement = createStatement();
+          statement.setLong(1, 123L);
+          statement.executeQuery();
+        });
+  }
+
+  @Test
+  public void testChangeParameterTypeOnCachedStatement() throws SQLException {
+    when(mockDataClient.prepareStatement(any(), any())).thenReturn(mockPreparedStatement);
+    when(mockPreparedStatement.bind()).thenReturn(mockBoundStatementBuilder);
+    when(mockBoundStatementBuilder.build()).thenReturn(mockBoundStatement);
+    when(mockDataClient.executeQuery(mockBoundStatement)).thenReturn(mockResultSet);
+
+    PreparedStatement statement = createStatement();
+    statement.setLong(1, 123L);
+    statement.executeQuery(); // Caches the statement
+
+    assertThrows(
+        SQLException.class,
+        () -> {
+          statement.setString(1, "new value");
+        });
+  }
 }

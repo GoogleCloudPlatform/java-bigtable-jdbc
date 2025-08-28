@@ -52,16 +52,12 @@ public class JdbcExample {
         int columnCount = resultSet.getMetaData().getColumnCount();
         System.out.println("Result set has " + columnCount + " columns.");
 
-        if (!resultSet.next()) {
-          System.out.println("No matching rows found.");
-        } else {
-          while (resultSet.next()) {
-            System.out.println("--- New Row ---");
-            for (int i = 1; i <= columnCount; i++) {
-              String columnName = resultSet.getMetaData().getColumnName(i);
-              Object value = resultSet.getObject(i);
-              System.out.println(columnName + ": " + value);
-            }
+        while (resultSet.next()) {
+          System.out.println("--- Row ---");
+          for (int i = 1; i <= columnCount; i++) {
+            String columnName = resultSet.getMetaData().getColumnName(i);
+            Object value = resultSet.getObject(i);
+            System.out.println(columnName + ": " + value);
           }
         }
       }

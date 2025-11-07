@@ -216,6 +216,27 @@
               <excludes>
                 <exclude>**/examples/**</exclude>
                 <exclude>**/BigtableEmulatorClientWrapper.class</exclude>
+                <exclude>JdbcExample.class</exclude>
+                <exclude>JdbcExampleBasicWithCreds.class</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>text-report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <formats>
+                <format>CSV</format>
+              </formats>
+              <outputDirectory>${project.build.directory}/jacoco-report</outputDirectory>
+              <excludes>
+                <exclude>**/examples/**</exclude>
+                <exclude>**/BigtableEmulatorClientWrapper.class</exclude>
+                <exclude>JdbcExample.class</exclude>
+                <exclude>JdbcExampleBasicWithCreds.class</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -241,6 +262,8 @@
               <excludes>
                 <exclude>**/examples/**</exclude>
                 <exclude>**/BigtableEmulatorClientWrapper.class</exclude>
+                <exclude>JdbcExample.class</exclude>
+                <exclude>JdbcExampleBasicWithCreds.class</exclude>
               </excludes>
             </configuration>
           </execution>

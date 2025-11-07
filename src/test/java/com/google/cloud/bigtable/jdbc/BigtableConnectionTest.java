@@ -474,4 +474,11 @@ public class BigtableConnectionTest {
     Connection connection = createConnection();
     assertEquals(ResultSet.HOLD_CURSORS_OVER_COMMIT, connection.getHoldability());
   }
+
+  @Test
+  public void testEmptyURL() {
+    assertThrows(SQLException.class, () -> {
+      new BigtableConnection("", properties, null);
+    });
+  }
 }

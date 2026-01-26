@@ -29,6 +29,7 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
+import com.google.cloud.bigtable.data.v2.stub.EnhancedBigtableStubSettings;
 import com.google.cloud.bigtable.data.v2.stub.metrics.NoopMetricsProvider;
 
 public class BigtableClientFactoryImpl implements IBigtableClientFactory {
@@ -91,6 +92,18 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
 
   public BigtableDataClient createBigtableDataClient(String projectId, String instanceId,
       String appProfileId, String host, int port) throws IOException {
+    BigtableDataSettings settings =
+        createBigtableDataSettings(projectId, instanceId, appProfileId, host, port);
+
+    // Known issue: BigtableDataClient cannot now whether a connection is established unless
+    // a table name is specified. The check would leverage `sampleRowKeys(tableId)`, which will
+    // throw an exception if connection fails.
+    // For now, a connection will always be "valid" until a query is called.
+    return BigtableDataClient.create(settings);
+  }
+
+  public BigtableDataSettings createBigtableDataSettings(String projectId, String instanceId,
+      String appProfileId, String host, int port) throws IOException {
     BigtableDataSettings.Builder builder;
     if (host != null && (host.equals("localhost") || host.equals("127.0.0.1")) && port != -1) {
       builder = BigtableDataSettings.newBuilderForEmulator(port);
@@ -105,13 +118,15 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
     }
 
     builder.stubSettings()
+        // Intentionally disable the refreshing channel and internal metrics.
+        // Enabling this could potentially cause the JDBC driver to hang, due to a classloader
+        // conflict involving OpenTelemetry's ServiceLoader usage.
+        .setRefreshingChannel(false).disableInternalMetrics()
+        .setTransportChannelProvider(EnhancedBigtableStubSettings
+            .defaultGrpcTransportProviderBuilder().setPoolSize(10).build())
         .setHeaderProvider(FixedHeaderProvider.create("user-agent", "bigtable-jdbc/1.0.0"))
         .setMetricsProvider(NoopMetricsProvider.INSTANCE);
 
-    // Known issue: BigtableDataClient cannot now whether a connection is established unless
-    // a table name is specified. The check would leverage `sampleRowKeys(tableId)`, which will
-    // throw an exception if connection fails.
-    // For now, a connection will always be "valid" until a query is called.
-    return BigtableDataClient.create(builder.build());
+    return builder.build();
   }
 }

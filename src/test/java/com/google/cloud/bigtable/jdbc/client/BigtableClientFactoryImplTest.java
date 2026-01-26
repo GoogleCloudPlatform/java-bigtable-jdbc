@@ -16,11 +16,16 @@
 
 package com.google.cloud.bigtable.jdbc.client;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import com.google.auth.Credentials;
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.BigtableDataSettings;
+import com.google.cloud.bigtable.data.v2.stub.metrics.NoopMetricsProvider;
 import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -190,8 +195,20 @@ public class BigtableClientFactoryImplTest {
     // We expect the JSON string to take precedence. To test this, we can't easily inspect the
     // created credentials. Instead, we can be reasonably sure by checking that no exception is
     // thrown when the file path is invalid.
-    info.setProperty("credential_file_path", "invalid/path");
-    BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(info);
-    assertNotNull(factory);
-  }
-}
+        info.setProperty("credential_file_path", "invalid/path");
+        BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(info);
+        assertNotNull(factory);
+      }
+    
+      @Test
+      public void testCreateBigtableDataSettingsDisablesMetrics() throws IOException {
+        Credentials credentials = mock(Credentials.class);
+        BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(credentials);
+        BigtableDataSettings settings =
+            factory.createBigtableDataSettings("test-project", "test-instance", null, null, -1);
+    
+        assertFalse(settings.getStubSettings().areInternalMetricsEnabled());
+        assertEquals(NoopMetricsProvider.INSTANCE, settings.getStubSettings().getMetricsProvider());
+      }
+    }
+    

@@ -34,7 +34,7 @@ jobs:
   build:
     strategy:
       matrix:
-        java: [ '11', '17', '21', '25' ]
+        java: [ '17', '21', '25' ]
     runs-on: ubuntu-latest
 
     steps:
@@ -51,14 +51,14 @@ jobs:
       run: mvn -B clean verify
 
     - name: Upload coverage report
-      if: matrix.java == '8' && always()
+      if: matrix.java == '17' && always()
       uses: actions/upload-artifact@v4
       with:
         name: jacoco-report
         path: target/site/jacoco/
 
     - name: Upload shaded jar
-      if: matrix.java == '8'
+      if: matrix.java == '17'
       uses: actions/upload-artifact@v4
       with:
         name: bigtable-jdbc-shaded

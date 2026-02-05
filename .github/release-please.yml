@@ -1,0 +1,12 @@
+handleGHRelease: true
+manifest: true
+releaseType: java-yoshi
+bumpMinorPreMajor: true
+
+branches:
+  - branch: main
+    releaseType: java-yoshi
+    handleGHRelease: true
+    manifest: true
+    manifestFile: .release-please-manifest.json
+    manifestConfig: release-please-config.json

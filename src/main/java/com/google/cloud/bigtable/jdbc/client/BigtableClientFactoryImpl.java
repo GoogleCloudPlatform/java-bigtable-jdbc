@@ -46,7 +46,7 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
 
   public BigtableClientFactoryImpl() {}
 
-  public BigtableClientFactoryImpl(Properties info) throws SQLException {
+  public BigtableClientFactoryImpl(Properties info) {
     try {
       if (info.containsKey("credential_json")) {
         this.credentials =
@@ -58,7 +58,7 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
                 .createScoped(SCOPES);
       }
     } catch (IOException e) {
-      throw new SQLException("Failed to load credentials", e);
+      throw new IllegalArgumentException("Failed to load credentials", e);
     }
   }
 

@@ -52,12 +52,12 @@ public class JdbcExampleBasicWithCreds {
       return;
     }
 
-    String sql = "SELECT * from " + tableId; // "SELECT * FROM " + tableId + " WHERE _key = ?";
+    String sql = "SELECT * from " + tableId;
 
     // This is a sample service account key. Please replace with your own service account key.
 
     Properties info = new Properties();
-    info.put("credential_file_path", credFilePath);
+    info.setProperty("credential_file_path", credFilePath);
     try (Connection connection = DriverManager.getConnection(url, info);
         PreparedStatement statement = connection.prepareStatement(sql)) {
 

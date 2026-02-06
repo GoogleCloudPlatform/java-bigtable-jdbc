@@ -65,7 +65,7 @@ public class BigtableClientFactoryImplTest {
   }
 
   @Test
-  public void testConstructorWithCredentialFilePath() throws IOException, SQLException {
+  public void testConstructorWithCredentialFilePath() throws IOException {
     String jsonContent =
         "{\"client_id\": \"dummy_client_id\",\n"
             + "  \"client_secret\": \"dummy_client_secret\",\n"
@@ -83,7 +83,7 @@ public class BigtableClientFactoryImplTest {
   }
 
   @Test
-  public void testConstructorWithCredentialJsonString() throws SQLException {
+  public void testConstructorWithCredentialJsonString() {
     String jsonContent =
         "{\"client_id\": \"dummy_client_id\",\n"
             + "  \"client_secret\": \"dummy_client_secret\",\n"
@@ -97,15 +97,15 @@ public class BigtableClientFactoryImplTest {
     assertNotNull(factory);
   }
 
-  @Test(expected = SQLException.class)
-  public void testConstructorWithInvalidCredentialFilePath() throws SQLException {
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorWithInvalidCredentialFilePath() {
     Properties info = new Properties();
     info.setProperty("credential_file_path", "nonexistent/file/path.json");
     new BigtableClientFactoryImpl(info);
   }
 
-  @Test(expected = SQLException.class)
-  public void testConstructorWithInvalidCredentialJsonString() throws SQLException {
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorWithInvalidCredentialJsonString() {
     Properties info = new Properties();
     info.setProperty("credential_json", "invalid json");
     new BigtableClientFactoryImpl(info);
@@ -225,24 +225,14 @@ public class BigtableClientFactoryImplTest {
   }
 
   @Test
-  public void testConstructorWithNoCredentialProperties() throws SQLException {
-    // This test relies on the environment having ADC available.
-    // If it fails, it might be due to the test environment not being configured for ADC.
-    try {
-      Properties info = new Properties();
-      BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(info);
-      assertNotNull(factory);
-    } catch (SQLException e) {
-      if (e.getMessage().contains("Failed to get Application Default Credentials")) {
-        // This is an acceptable failure if ADC are not configured in the environment.
-      } else {
-        throw e;
-      }
-    }
+  public void testConstructorWithNoCredentialProperties() {
+    Properties info = new Properties();
+    BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(info);
+    assertNotNull(factory);
   }
 
   @Test
-  public void testCredentialPropertyPrecedence() throws IOException, SQLException {
+  public void testCredentialPropertyPrecedence() throws IOException {
     String jsonContent =
         "{\"client_id\": \"dummy_client_id\",\n"
             + "  \"client_secret\": \"dummy_client_secret\",\n"

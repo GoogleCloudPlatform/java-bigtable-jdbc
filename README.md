@@ -70,3 +70,13 @@ public class Main {
     ```bash
     mvn exec:java -Dexec.mainClass="JdbcExampleBasicWithCreds" -Dexec.args="[PROJECT_ID] [INSTANCE_ID] [TABLE_ID] [CREDENTIAL_FILE_PATH]"
     ```
+
+## Authentication
+
+The driver supports several ways to provide Google Cloud credentials:
+
+1.  **Application Default Credentials (ADC):** If no explicit credentials are provided, the driver will use ADC.
+2.  **Service Account JSON String:** Use the `credential_json` property to provide the full JSON content of a service account key.
+3.  **Service Account Key File:** Use the `credential_file_path` property to provide the path to a service account JSON key file.
+
+**Note:** If both `credential_json` and `credential_file_path` are provided, `credential_json` takes precedence.

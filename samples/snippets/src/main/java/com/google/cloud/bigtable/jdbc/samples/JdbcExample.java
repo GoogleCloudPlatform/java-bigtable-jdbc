@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+package com.google.cloud.bigtable.jdbc.samples;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,7 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /*
- * To run: mvn exec:java -Dexec.mainClass="JdbcExample"
+ * To run: mvn exec:java -Dexec.mainClass="com.google.cloud.bigtable.jdbc.samples.JdbcExample"
  * -Dexec.args="test-project test-instance test-table rowkey"
  */
 public class JdbcExample {

@@ -170,7 +170,7 @@ public class BigtableStatementTest {
 
   @Test
   public void testExecuteQueryWithDml() {
-    when(mockDataClient.prepareStatement(Mockito.anyString(), Mockito.any()))
+    when(mockDataClient.prepareStatement(Mockito.eq("INSERT INTO table VALUES (1)"), Mockito.any()))
         .thenThrow(new IllegalArgumentException());
     BigtableStatement statement = createStatement();
     assertThrows(
@@ -180,7 +180,7 @@ public class BigtableStatementTest {
 
   @Test
   public void testExecuteWithDml() {
-    when(mockDataClient.prepareStatement(Mockito.anyString(), Mockito.any()))
+    when(mockDataClient.prepareStatement(Mockito.eq("INSERT INTO table VALUES (1)"), Mockito.any()))
         .thenThrow(new IllegalArgumentException());
     BigtableStatement statement = createStatement();
     assertThrows(

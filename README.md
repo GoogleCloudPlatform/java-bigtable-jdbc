@@ -33,12 +33,12 @@ public class Main {
   }
 }
 ```
-## Running the Example
+## Running the Samples
 
 ### Prerequisites
 
-* Java 8 or higher
-* Maven 3.2.5 or higher
+* Java 17 or higher
+* Maven 3.9.9 or higher
 * A Google Cloud project with the Bigtable API enabled
 * A Bigtable instance and table
 
@@ -54,21 +54,27 @@ public class Main {
 2. **Build the project:**
 
     ```bash
-    mvn clean package
+    mvn clean install -DskipTests
     ```
 
-3. **Run the example:**
+3. **Run the samples:**
+
+    Navigate to the samples directory:
+
+    ```bash
+    cd samples/snippets
+    ```
 
     Replace the placeholder values with your actual project ID, instance ID, table name, and row key.
 
     ```bash
-    mvn exec:java -Dexec.mainClass="com.google.cloud.bigtable.jdbc.example.JdbcExample" -Dexec.args="[PROJECT_ID] [INSTANCE_ID] [TABLE_NAME] [ROW_KEY]"
+    mvn exec:java -Dexec.mainClass="com.google.cloud.bigtable.jdbc.samples.JdbcExample" -Dexec.args="[PROJECT_ID] [INSTANCE_ID] [TABLE_NAME] [ROW_KEY]"
     ```
 
     Alternatively, to run the example with a service account key file:
 
     ```bash
-    mvn exec:java -Dexec.mainClass="JdbcExampleBasicWithCreds" -Dexec.args="[PROJECT_ID] [INSTANCE_ID] [TABLE_ID] [CREDENTIAL_FILE_PATH]"
+    mvn exec:java -Dexec.mainClass="com.google.cloud.bigtable.jdbc.samples.JdbcExampleBasicWithCreds" -Dexec.args="[PROJECT_ID] [INSTANCE_ID] [TABLE_NAME] [CREDENTIAL_FILE_PATH]"
     ```
 
 ## Authentication

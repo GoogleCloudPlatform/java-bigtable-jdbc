@@ -18,6 +18,7 @@ package com.google.cloud.bigtable.jdbc;
 
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
+import com.google.common.collect.ImmutableMap;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,7 +44,7 @@ public class BigtableStatement implements Statement {
   public ResultSet executeQuery(String sql) throws SQLException {
     checkClosed();
     com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement preparedStatement =
-        client.prepareStatement(sql, null);
+        client.prepareStatement(sql, ImmutableMap.of());
     BoundStatement boundStatement = preparedStatement.bind().build();
 
     com.google.cloud.bigtable.data.v2.models.sql.ResultSet resultSet =

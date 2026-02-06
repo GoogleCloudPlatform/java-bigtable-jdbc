@@ -26,7 +26,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
 import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
+import com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement;
 import com.google.cloud.bigtable.data.v2.models.sql.ResultSet;
+import com.google.common.collect.ImmutableMap;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import org.junit.After;
@@ -113,14 +115,12 @@ public class BigtableStatementTest {
 
   @Test
   public void testGetResultSet() throws SQLException {
-    com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement mockPreparedStatement =
-        org.mockito.Mockito.mock(
-            com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement.class);
-    BoundStatement.Builder mockBoundStatementBuilder =
-        org.mockito.Mockito.mock(BoundStatement.Builder.class);
-    BoundStatement mockBoundStatement = org.mockito.Mockito.mock(BoundStatement.class);
+    PreparedStatement mockPreparedStatement = Mockito.mock(PreparedStatement.class);
+    BoundStatement.Builder mockBoundStatementBuilder = Mockito.mock(BoundStatement.Builder.class);
+    BoundStatement mockBoundStatement = Mockito.mock(BoundStatement.class);
 
-    when(mockDataClient.prepareStatement(SQL, null)).thenReturn(mockPreparedStatement);
+    when(mockDataClient.prepareStatement(Mockito.anyString(), Mockito.any()))
+        .thenReturn(mockPreparedStatement);
     when(mockPreparedStatement.bind()).thenReturn(mockBoundStatementBuilder);
     when(mockBoundStatementBuilder.build()).thenReturn(mockBoundStatement);
     when(mockDataClient.executeQuery(mockBoundStatement)).thenReturn(mockResultSet);
@@ -153,14 +153,12 @@ public class BigtableStatementTest {
 
   @Test
   public void testExecute() throws SQLException {
-    com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement mockPreparedStatement =
-        org.mockito.Mockito.mock(
-            com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement.class);
-    BoundStatement.Builder mockBoundStatementBuilder =
-        org.mockito.Mockito.mock(BoundStatement.Builder.class);
-    BoundStatement mockBoundStatement = org.mockito.Mockito.mock(BoundStatement.class);
+    PreparedStatement mockPreparedStatement = Mockito.mock(PreparedStatement.class);
+    BoundStatement.Builder mockBoundStatementBuilder = Mockito.mock(BoundStatement.Builder.class);
+    BoundStatement mockBoundStatement = Mockito.mock(BoundStatement.class);
 
-    when(mockDataClient.prepareStatement(SQL, null)).thenReturn(mockPreparedStatement);
+    when(mockDataClient.prepareStatement(Mockito.anyString(), Mockito.any()))
+        .thenReturn(mockPreparedStatement);
     when(mockPreparedStatement.bind()).thenReturn(mockBoundStatementBuilder);
     when(mockBoundStatementBuilder.build()).thenReturn(mockBoundStatement);
     when(mockDataClient.executeQuery(mockBoundStatement)).thenReturn(mockResultSet);
@@ -172,7 +170,7 @@ public class BigtableStatementTest {
 
   @Test
   public void testExecuteQueryWithDml() {
-    when(mockDataClient.prepareStatement("INSERT INTO table VALUES (1)", null))
+    when(mockDataClient.prepareStatement(Mockito.eq("INSERT INTO table VALUES (1)"), Mockito.any()))
         .thenThrow(new IllegalArgumentException());
     BigtableStatement statement = createStatement();
     assertThrows(
@@ -182,7 +180,7 @@ public class BigtableStatementTest {
 
   @Test
   public void testExecuteWithDml() {
-    when(mockDataClient.prepareStatement("INSERT INTO table VALUES (1)", null))
+    when(mockDataClient.prepareStatement(Mockito.eq("INSERT INTO table VALUES (1)"), Mockito.any()))
         .thenThrow(new IllegalArgumentException());
     BigtableStatement statement = createStatement();
     assertThrows(
@@ -297,14 +295,12 @@ public class BigtableStatementTest {
 
   @Test
   public void testExecuteQuery() throws SQLException {
-    com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement mockPreparedStatement =
-        org.mockito.Mockito.mock(
-            com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement.class);
-    BoundStatement.Builder mockBoundStatementBuilder =
-        org.mockito.Mockito.mock(BoundStatement.Builder.class);
-    BoundStatement mockBoundStatement = org.mockito.Mockito.mock(BoundStatement.class);
+    PreparedStatement mockPreparedStatement = Mockito.mock(PreparedStatement.class);
+    BoundStatement.Builder mockBoundStatementBuilder = Mockito.mock(BoundStatement.Builder.class);
+    BoundStatement mockBoundStatement = Mockito.mock(BoundStatement.class);
 
-    when(mockDataClient.prepareStatement(SQL, null)).thenReturn(mockPreparedStatement);
+    when(mockDataClient.prepareStatement(Mockito.anyString(), Mockito.any()))
+        .thenReturn(mockPreparedStatement);
     when(mockPreparedStatement.bind()).thenReturn(mockBoundStatementBuilder);
     when(mockBoundStatementBuilder.build()).thenReturn(mockBoundStatement);
     when(mockDataClient.executeQuery(mockBoundStatement)).thenReturn(mockResultSet);
@@ -312,6 +308,25 @@ public class BigtableStatementTest {
     BigtableStatement statement = createStatement();
     java.sql.ResultSet resultSet = statement.executeQuery(SQL);
     assertNotNull(resultSet);
+  }
+
+  @Test
+  public void testExecuteQuery_passesEmptyMapToPrepareStatement() throws SQLException {
+    String sql = "SELECT 42";
+    PreparedStatement mockPreparedStatement = Mockito.mock(PreparedStatement.class);
+    BoundStatement.Builder mockBoundStatementBuilder = Mockito.mock(BoundStatement.Builder.class);
+    BoundStatement mockBoundStatement = Mockito.mock(BoundStatement.class);
+
+    when(mockDataClient.prepareStatement(Mockito.eq(sql), Mockito.any()))
+        .thenReturn(mockPreparedStatement);
+    when(mockPreparedStatement.bind()).thenReturn(mockBoundStatementBuilder);
+    when(mockBoundStatementBuilder.build()).thenReturn(mockBoundStatement);
+    when(mockDataClient.executeQuery(mockBoundStatement)).thenReturn(mockResultSet);
+
+    BigtableStatement statement = createStatement();
+    statement.executeQuery(sql);
+
+    Mockito.verify(mockDataClient).prepareStatement(sql, ImmutableMap.of());
   }
 
   @Test

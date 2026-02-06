@@ -16,6 +16,9 @@
 
 package com.google.cloud.bigtable.jdbc;
 
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
+import com.google.common.collect.ImmutableMap;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,9 +27,6 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import com.google.cloud.bigtable.data.v2.BigtableDataClient;
-import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
-import com.google.common.collect.ImmutableMap;
 
 public class BigtableStatement implements Statement {
   protected final BigtableConnection connection;

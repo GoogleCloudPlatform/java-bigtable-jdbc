@@ -60,15 +60,18 @@ javadoc)
     RETURN_CODE=$?
     ;;
 integration)
+    # Run Application Default
+    gcloud config get-value core/project
+    # Run Integration Tests
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dtest=BigtableDriverIT \
+      -Penable-integration-tests \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
-      -Dmaven.javadoc.skip=true \
-      -Dgcloud.download.skip=true \
-      -Djacoco.skip=true \
+      -Dcheckstyle.skip=true \
+      -DskipUnitTests=true \
+      -Dfmt.skip=true \
       -fae \
       verify
     RETURN_CODE=$?

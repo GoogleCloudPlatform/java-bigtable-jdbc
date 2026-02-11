@@ -15,6 +15,7 @@
 
 package com.google.cloud.bigtable.jdbc;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.rpc.FixedHeaderProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.bigtable.admin.v2.BigtableTableAdminClient;
@@ -38,21 +39,29 @@ class BigtableEmulatorClientWrapper implements Serializable {
       @Nullable Integer emulatorPort,
       @Nullable Credentials gcpCredentials)
       throws IOException {
-    BigtableDataSettings.Builder settings =
-        BigtableDataSettings.newBuilderForEmulator(emulatorPort)
-            .setProjectId(project)
-            .setInstanceId(instanceId);
+    BigtableDataSettings.Builder settings;
+    BigtableTableAdminSettings.Builder tableSettings;
 
+    if (emulatorPort != null) {
+      settings = BigtableDataSettings.newBuilderForEmulator(emulatorPort);
+      tableSettings = BigtableTableAdminSettings.newBuilderForEmulator(emulatorPort);
+    } else {
+      settings = BigtableDataSettings.newBuilder();
+      tableSettings = BigtableTableAdminSettings.newBuilder();
+      if (gcpCredentials != null) {
+        settings.setCredentialsProvider(FixedCredentialsProvider.create(gcpCredentials));
+        tableSettings.setCredentialsProvider(FixedCredentialsProvider.create(gcpCredentials));
+      }
+    }
+
+    settings.setProjectId(project).setInstanceId(instanceId);
     settings
         .stubSettings()
         .setHeaderProvider(FixedHeaderProvider.create("user-agent", "bigtable-jdbc/1.0.0"));
     dataClient = BigtableDataClient.create(settings.build());
-    BigtableTableAdminSettings tableSettings =
-        BigtableTableAdminSettings.newBuilderForEmulator(emulatorPort)
-            .setProjectId(project)
-            .setInstanceId(instanceId)
-            .build();
-    tableAdminClient = BigtableTableAdminClient.create(tableSettings);
+
+    tableSettings.setProjectId(project).setInstanceId(instanceId);
+    tableAdminClient = BigtableTableAdminClient.create(tableSettings.build());
   }
 
   void createTable(String tableName, String familyName) {

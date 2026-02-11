@@ -29,7 +29,7 @@ echo ${JOB_TYPE}
 
 # attempt to install 3 times with exponential backoff (starting with 10 seconds)
 retry_with_backoff 3 10 \
-  mvn install -B -V -ntp -q \
+  mvn install -B -V -ntp \
     -DskipTests=true \
     -Dclirr.skip=true \
     -Denforcer.skip=true \
@@ -63,10 +63,13 @@ integration)
     # Run Application Default
     echo "----------------"
     gcloud config get-value core/project || true
+
     # Run Integration Tests
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
       -Penable-integration-tests \
+      -Dgoogle.bigtable.project.id="${GOOGLE_CLOUD_PROJECT}" \
+      -Dgoogle.bigtable.instance.id="${BIGTABLE_INSTANCE}" \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \

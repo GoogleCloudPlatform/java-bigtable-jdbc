@@ -44,8 +44,14 @@ public class BigtableDriverIT {
 
   private static BigtableEmulatorClientWrapper emulatorWrapper;
 
-  private static final String PROJECT = "fakeProject";
-  private static final String INSTANCE = "fakeInstance";
+  private static final String PROJECT =
+      System.getProperty("google.bigtable.project.id", "fakeProject");
+  private static final String INSTANCE =
+      System.getProperty("google.bigtable.instance.id", "fakeInstance");
+  private static final boolean USE_EMULATOR =
+      System.getProperty("google.bigtable.project.id") == null
+          || System.getProperty("google.bigtable.project.id").isEmpty();
+
   static final String KEY1 = "key1";
   static final String KEY2 = "key2";
   static final String BOOL_COLUMN = "boolColumn";
@@ -86,8 +92,8 @@ public class BigtableDriverIT {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    emulatorWrapper =
-        new BigtableEmulatorClientWrapper(PROJECT, INSTANCE, BIGTABLE_EMULATOR.getPort(), null);
+    Integer port = USE_EMULATOR ? BIGTABLE_EMULATOR.getPort() : null;
+    emulatorWrapper = new BigtableEmulatorClientWrapper(PROJECT, INSTANCE, port, null);
   }
 
   @AfterClass
@@ -95,13 +101,20 @@ public class BigtableDriverIT {
     emulatorWrapper.closeSession();
   }
 
+  private String getJdbcUrl() {
+    if (USE_EMULATOR) {
+      return String.format(
+          "jdbc:bigtable://localhost:%d/projects/%s/instances/%s",
+          BIGTABLE_EMULATOR.getPort(), PROJECT, INSTANCE);
+    } else {
+      return String.format("jdbc:bigtable:/projects/%s/instances/%s", PROJECT, INSTANCE);
+    }
+  }
+
   @Test
   public void testValidConnection() throws Exception {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
-    String url =
-        String.format(
-            "jdbc:bigtable://localhost:%d/projects/%s/instances/%s",
-            BIGTABLE_EMULATOR.getPort(), PROJECT, INSTANCE);
+    String url = getJdbcUrl();
     try (Connection connection = DriverManager.getConnection(url)) {
       assertTrue(connection.isValid(0));
     }
@@ -110,10 +123,15 @@ public class BigtableDriverIT {
   @Test
   public void testInvalidConnection() throws Exception {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
-    String url =
-        String.format(
-            "jdbc:bigtable://localhost:%d/projects/%s/instances/%s",
-            BIGTABLE_EMULATOR.getPort(), "bogus-project", "bogus-instance");
+    String url;
+    if (USE_EMULATOR) {
+      url =
+          String.format(
+              "jdbc:bigtable://localhost:%d/projects/%s/instances/%s",
+              BIGTABLE_EMULATOR.getPort(), "bogus-project", "bogus-instance");
+    } else {
+      url = "jdbc:bigtable:/projects/bogus-project/instances/bogus-instance";
+    }
     try (Connection connection = DriverManager.getConnection(url)) {
       // Known issue: Bigtable cannot now whether a connection is established unless
       // a table name is specified. The check would leverage `sampleRowKeys(tableId)`, which will
@@ -129,10 +147,7 @@ public class BigtableDriverIT {
       "Enable this test after Emulator supports PreparedQuery"
           + " https://github.com/googleapis/google-cloud-go/issues/12049.")
   public void testSelectStatement() throws Exception {
-    String url =
-        String.format(
-            "jdbc:bigtable://localhost:%d/projects/%s/instances/%s",
-            BIGTABLE_EMULATOR.getPort(), PROJECT, INSTANCE);
+    String url = getJdbcUrl();
     String tableName = "test-table";
     String select = String.format("SELECT * FROM `%s` WHERE _key = ?", tableName);
 

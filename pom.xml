@@ -52,6 +52,8 @@
     <guava.version>33.4.0-jre</guava.version>
     <google-cloud-core.version>2.52.0</google-cloud-core.version>
     <checker-qual.version>3.49.0</checker-qual.version>
+    <skipUnitTests>false</skipUnitTests>
+    <skipITs>true</skipITs>
   </properties>
 
   <dependencies>
@@ -264,10 +266,19 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>${skipUnitTests}</skipTests>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*IT.java</include>
+          </includes>
+          <skipTests>${skipITs}</skipTests>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -297,4 +308,13 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>enable-integration-tests</id>
+      <properties>
+        <skipITs>false</skipITs>
+      </properties>
+    </profile>
+  </profiles>
 </project>

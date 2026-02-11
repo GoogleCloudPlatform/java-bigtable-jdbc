@@ -61,7 +61,8 @@ javadoc)
     ;;
 integration)
     # Run Application Default
-    gcloud config get-value core/project
+    echo "----------------"
+    gcloud config get-value core/project || true
     # Run Integration Tests
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \

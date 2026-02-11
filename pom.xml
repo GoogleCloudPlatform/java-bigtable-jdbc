@@ -51,7 +51,7 @@
     <protobuf.version>3.25.5</protobuf.version>
     <guava.version>33.4.0-jre</guava.version>
     <google-cloud-core.version>2.52.0</google-cloud-core.version>
-    <checker-qual.version>3.49.0</checker-qual.version>
+    <checker-qual.version>3.53.1</checker-qual.version>
   </properties>
 
   <dependencies>

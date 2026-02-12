@@ -93,12 +93,20 @@ public class BigtableDriverIT {
   @BeforeClass
   public static void setUp() throws Exception {
     Integer port = USE_EMULATOR ? BIGTABLE_EMULATOR.getPort() : null;
-    emulatorWrapper = new BigtableEmulatorClientWrapper(PROJECT, INSTANCE, port, null);
+    com.google.auth.Credentials credentials = null;
+    if (!USE_EMULATOR) {
+      credentials =
+          com.google.auth.oauth2.GoogleCredentials.getApplicationDefault()
+              .createScoped(com.google.cloud.bigtable.jdbc.client.BigtableClientFactoryImpl.SCOPES);
+    }
+    emulatorWrapper = new BigtableEmulatorClientWrapper(PROJECT, INSTANCE, port, credentials);
   }
 
   @AfterClass
   public static void tearDown() throws IOException {
-    emulatorWrapper.closeSession();
+    if (emulatorWrapper != null) {
+      emulatorWrapper.closeSession();
+    }
   }
 
   private String getJdbcUrl() {
@@ -115,6 +123,17 @@ public class BigtableDriverIT {
   public void testValidConnection() throws Exception {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     String url = getJdbcUrl();
+    try (Connection connection = DriverManager.getConnection(url)) {
+      assertTrue(connection.isValid(0));
+    }
+  }
+
+  @Test
+  public void testConnectionWithApplicationDefaultCredentials() throws Exception {
+    // This test ensures that the driver can connect using ADC (no explicit credentials in URL or Properties)
+    Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
+    String url = getJdbcUrl();
+    // No Properties object passed, should trigger ADC logic
     try (Connection connection = DriverManager.getConnection(url)) {
       assertTrue(connection.isValid(0));
     }

@@ -37,7 +37,7 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
   private Credentials credentials;
 
   @VisibleForTesting
-  static final List<String> SCOPES =
+  public static final List<String> SCOPES =
       Arrays.asList(
           "https://www.googleapis.com/auth/cloud-platform",
           "https://www.googleapis.com/auth/bigtable.admin",
@@ -80,7 +80,11 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
   }
 
   protected Credentials loadDefaultCredentials() throws IOException {
-    return GoogleCredentials.getApplicationDefault();
+    Credentials credentials = GoogleCredentials.getApplicationDefault();
+    if (credentials instanceof GoogleCredentials) {
+      return ((GoogleCredentials) credentials).createScoped(SCOPES);
+    }
+    return credentials;
   }
 
   public BigtableDataClient createBigtableDataClient(

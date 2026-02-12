@@ -44,10 +44,13 @@ public class BigtableDriverIT {
 
   private static BigtableEmulatorClientWrapper emulatorWrapper;
 
-  private static final String PROJECT =
-      System.getProperty("google.bigtable.project.id", "fakeProject");
-  private static final String INSTANCE =
-      System.getProperty("google.bigtable.instance.id", "fakeInstance");
+  private static String getProperty(String key, String defaultValue) {
+    String value = System.getProperty(key);
+    return (value == null || value.isEmpty()) ? defaultValue : value;
+  }
+
+  private static final String PROJECT = getProperty("google.bigtable.project.id", "fakeProject");
+  private static final String INSTANCE = getProperty("google.bigtable.instance.id", "fakeInstance");
   private static final boolean USE_EMULATOR =
       System.getProperty("google.bigtable.project.id") == null
           || System.getProperty("google.bigtable.project.id").isEmpty();

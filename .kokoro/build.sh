@@ -29,7 +29,7 @@ echo ${JOB_TYPE}
 
 # attempt to install 3 times with exponential backoff (starting with 10 seconds)
 retry_with_backoff 3 10 \
-  mvn install -B -V -ntp -q \
+  mvn install -B -V -ntp \
     -DskipTests=true \
     -Dclirr.skip=true \
     -Denforcer.skip=true \
@@ -39,6 +39,7 @@ retry_with_backoff 3 10 \
 
 # if GOOGLE_APPLICATION_CREDENTIALS is specified as a relative path, prepend Kokoro root directory onto it
 if [[ ! -z "${GOOGLE_APPLICATION_CREDENTIALS}" && "${GOOGLE_APPLICATION_CREDENTIALS}" != /* ]]; then
+    echo "=============SETTING CREDS==================="
     export GOOGLE_APPLICATION_CREDENTIALS=$(realpath ${KOKORO_GFILE_DIR}/${GOOGLE_APPLICATION_CREDENTIALS})
 fi
 
@@ -60,15 +61,22 @@ javadoc)
     RETURN_CODE=$?
     ;;
 integration)
+    # Run Application Default
+    echo ">>>>>>>>>>"
+    gcloud config get-value core/project || true
+
+    # Run Integration Tests
     mvn -B ${INTEGRATION_TEST_ARGS} \
       -ntp \
-      -Dtest=BigtableDriverIT \
+      -Penable-integration-tests \
+      -Dgoogle.bigtable.project.id="${GOOGLE_CLOUD_PROJECT}" \
+      -Dgoogle.bigtable.instance.id="${BIGTABLE_INSTANCE}" \
       -DtrimStackTrace=false \
       -Dclirr.skip=true \
       -Denforcer.skip=true \
-      -Dmaven.javadoc.skip=true \
-      -Dgcloud.download.skip=true \
-      -Djacoco.skip=true \
+      -Dcheckstyle.skip=true \
+      -DskipUnitTests=true \
+      -Dfmt.skip=true \
       -fae \
       verify
     RETURN_CODE=$?

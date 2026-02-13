@@ -62,7 +62,7 @@ javadoc)
     ;;
 integration)
     # Run Application Default
-    echo "----------------"
+    echo ">>>>>>>>>>"
     gcloud config get-value core/project || true
 
     # Run Integration Tests

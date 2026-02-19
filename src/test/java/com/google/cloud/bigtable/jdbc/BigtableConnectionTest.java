@@ -197,6 +197,26 @@ public class BigtableConnectionTest {
   }
 
   @Test
+  public void testIsValidWithNegativeTimeout() throws SQLException {
+    Connection connection = createConnection();
+    assertThrows(SQLException.class, () -> connection.isValid(-1));
+  }
+
+  @Test
+  public void testIsValidWithPositiveTimeout() throws SQLException {
+    Connection connection = createConnection();
+    assertTrue(connection.isValid(10));
+  }
+
+  @Test
+  public void testIsValidWhenQueryFails() throws SQLException {
+    Connection connection = createConnection();
+    when(mockDataClient.prepareStatement(anyString(), anyMap()))
+        .thenThrow(new RuntimeException("Query failed"));
+    assertFalse(connection.isValid(0));
+  }
+
+  @Test
   public void testSetClientInfoProperties() throws SQLException {
     BigtableConnection connection = createConnection();
     Properties properties = new Properties();
@@ -369,7 +389,7 @@ public class BigtableConnectionTest {
     assertThrows(SQLException.class, connection::getTypeMap);
     assertThrows(SQLException.class, () -> connection.setTypeMap(new java.util.HashMap<>()));
     assertThrows(SQLException.class, connection::getHoldability);
-    assertThrows(SQLException.class, () -> connection.isValid(0));
+    assertFalse(connection.isValid(0));
   }
 
   @Test

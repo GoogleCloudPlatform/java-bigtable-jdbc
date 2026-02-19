@@ -110,11 +110,17 @@ public class BigtableConnection implements Connection {
       this.client = createBigtableDataClient(connectionParams);
       // Test the connection by executing a simple query.
       // This will help catch any issues with the connection
-      this.prepareStatement("select 1").executeQuery();
+      validateConnection();
     } catch (java.net.URISyntaxException | IllegalArgumentException e) {
       throw new SQLException("Malformed JDBC URL: " + url, e);
     } catch (Exception e) {
       throw new SQLException("Failed to connect to Bigtable: " + e.getMessage(), e);
+    }
+  }
+
+  private void validateConnection() throws SQLException {
+    try (PreparedStatement statement = this.prepareStatement("select 1");
+      ResultSet rs = statement.executeQuery()) {
     }
   }
 
@@ -408,8 +414,18 @@ public class BigtableConnection implements Connection {
 
   @Override
   public boolean isValid(int timeout) throws SQLException {
-    checkClosed();
-    return true;
+    if (timeout < 0) {
+      throw new SQLException("timeout cannot be negative");
+    }
+    if (isClosed) {
+      return false;
+    }
+    try {
+      validateConnection();
+      return true;
+    } catch (SQLException e) {
+      return false;
+    }
   }
 
   /**

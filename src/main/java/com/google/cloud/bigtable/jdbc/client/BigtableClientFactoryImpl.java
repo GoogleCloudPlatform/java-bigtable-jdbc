@@ -83,17 +83,12 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
     return GoogleCredentials.getApplicationDefault();
   }
 
-  public BigtableDataClient createBigtableDataClient(
-      String projectId, String instanceId, String appProfileId, String host, int port)
+  public BigtableDataClient createBigtableDataClient(String projectId, String instanceId, String appProfileId)
       throws IOException {
-    BigtableDataSettings.Builder builder;
-    if (host != null && (host.equals("localhost") || host.equals("127.0.0.1")) && port != -1) {
-      builder = BigtableDataSettings.newBuilderForEmulator(port);
-    } else {
-      builder =
-          BigtableDataSettings.newBuilder()
-              .setCredentialsProvider(FixedCredentialsProvider.create(getCredentials()));
-    }
+    BigtableDataSettings.Builder builder =
+        BigtableDataSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(getCredentials()));
+
     builder.setProjectId(projectId).setInstanceId(instanceId);
 
     if (appProfileId != null) {

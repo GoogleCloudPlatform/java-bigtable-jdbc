@@ -77,6 +77,12 @@ public class BigtableJdbcUrlParser {
     // Prefix with a dummy scheme to make it a valid URI.
     URI internalUri = new URI("dummy:" + bigtablePathAndQuery);
 
+    if (internalUri.getHost() != null || internalUri.getPort() != -1) {
+      throw new IllegalArgumentException(
+          "Host and port are not supported in Bigtable JDBC URL. Use "
+              + "jdbc:bigtable:/projects/{projectId}/instances/{instanceId} format.");
+    }
+
     String path = internalUri.getPath();
     if (path == null) {
       throw new IllegalArgumentException(
@@ -96,13 +102,10 @@ public class BigtableJdbcUrlParser {
     String projectId = matcher.group(1);
     String instanceId = matcher.group(2);
 
-    String host = internalUri.getHost();
-    int port = internalUri.getPort();
-
     // Extract query parameters
     ImmutableMap<String, String> queryParameters = parseQueryParameters(internalUri.getQuery());
 
-    return new BigtableJdbcUrl(projectId, instanceId, host, port, queryParameters);
+    return new BigtableJdbcUrl(projectId, instanceId, queryParameters);
   }
 
   private static ImmutableMap<String, String> parseQueryParameters(String query) {
@@ -130,20 +133,14 @@ public class BigtableJdbcUrlParser {
   public static class BigtableJdbcUrl {
     private final String projectId;
     private final String instanceId;
-    private final String host;
-    private final int port;
     private final ImmutableMap<String, String> queryParameters;
 
     public BigtableJdbcUrl(
         String projectId,
         String instanceId,
-        String host,
-        int port,
         ImmutableMap<String, String> queryParameters) {
       this.projectId = projectId;
       this.instanceId = instanceId;
-      this.host = host;
-      this.port = port;
       this.queryParameters = queryParameters;
     }
 
@@ -155,14 +152,6 @@ public class BigtableJdbcUrlParser {
       return instanceId;
     }
 
-    public String getHost() {
-      return host;
-    }
-
-    public int getPort() {
-      return port;
-    }
-
     /** Returns the query parameters. */
     public ImmutableMap<String, String> getQueryParameters() {
       return queryParameters;
@@ -171,9 +160,8 @@ public class BigtableJdbcUrlParser {
     @Override
     public String toString() {
       return String.format(
-          "BigtableJdbcUrl{projectId='%s', instanceId='%s', host='%s', port=%d,"
-              + " queryParameters=%s}",
-          projectId, instanceId, host, port, queryParameters);
+          "BigtableJdbcUrl{projectId='%s', instanceId='%s', queryParameters=%s}",
+          projectId, instanceId, queryParameters);
     }
   }
 }

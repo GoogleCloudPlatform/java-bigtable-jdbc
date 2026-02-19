@@ -42,7 +42,6 @@
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <bigtable.java.version>2.57.3</bigtable.java.version>
-    <bigtable.java.emulator.version>0.210.0</bigtable.java.emulator.version>
     <junit.version>4.13.2</junit.version>
     <mockito.version>3.12.4</mockito.version>
     <jacoco.version>0.8.14</jacoco.version>
@@ -96,12 +95,6 @@
       <groupId>org.checkerframework</groupId>
       <artifactId>checker-qual</artifactId>
       <version>${checker-qual.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-bigtable-emulator</artifactId>
-      <version>${bigtable.java.emulator.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -216,11 +209,6 @@
             <goals>
               <goal>report</goal>
             </goals>
-            <configuration>
-              <excludes>
-                <exclude>**/BigtableEmulatorClientWrapper.class</exclude>
-              </excludes>
-            </configuration>
           </execution>
           <execution>
             <id>text-report</id>
@@ -233,9 +221,6 @@
                 <format>CSV</format>
               </formats>
               <outputDirectory>${project.build.directory}/jacoco-report</outputDirectory>
-              <excludes>
-                <exclude>**/BigtableEmulatorClientWrapper.class</exclude>
-              </excludes>
             </configuration>
           </execution>
           <execution>
@@ -256,9 +241,6 @@
                   </limits>
                 </rule>
               </rules>
-              <excludes>
-                <exclude>**/BigtableEmulatorClientWrapper.class</exclude>
-              </excludes>
             </configuration>
           </execution>
         </executions>

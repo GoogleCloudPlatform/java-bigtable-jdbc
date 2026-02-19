@@ -36,8 +36,6 @@ public class BigtableDriverSelectIT {
     String value = System.getProperty(key);
     return (value == null || value.isEmpty()) ? defaultValue : value;
   }
-  // We no longer use emulator because Bigtable Emulator does not support prepared statements,
-  // which is required to test connectivity.
   private static final String PROJECT = getProperty("google.bigtable.project.id", "fakeProject");
   private static final String INSTANCE = getProperty("google.bigtable.instance.id", "fakeInstance");
   private static final String TABLE = getProperty("google.bigtable.table.id", "hotels");

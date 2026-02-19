@@ -137,42 +137,14 @@ public class BigtableJdbcUrlParserTest {
   }
 
   @Test
-  public void testParseUrlWithHostAndPort() throws URISyntaxException {
+  public void testParseUrlWithHostAndPortRejected() {
     String url = "jdbc:bigtable://localhost:8086/projects/my-project/instances/my-instance";
-    BigtableJdbcUrl parsedUrl = BigtableJdbcUrlParser.parse(url);
-
-    assertNotNull(parsedUrl);
-    assertEquals("my-project", parsedUrl.getProjectId());
-    assertEquals("my-instance", parsedUrl.getInstanceId());
-    assertEquals("localhost", parsedUrl.getHost());
-    assertEquals(8086, parsedUrl.getPort());
-    assertTrue(parsedUrl.getQueryParameters().isEmpty());
+    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
   }
 
   @Test
-  public void testParseUrlWithHostAndNoPort() throws URISyntaxException {
+  public void testParseUrlWithHostAndNoPortRejected() {
     String url = "jdbc:bigtable://localhost/projects/my-project/instances/my-instance";
-    BigtableJdbcUrl parsedUrl = BigtableJdbcUrlParser.parse(url);
-
-    assertNotNull(parsedUrl);
-    assertEquals("my-project", parsedUrl.getProjectId());
-    assertEquals("my-instance", parsedUrl.getInstanceId());
-    assertEquals("localhost", parsedUrl.getHost());
-    assertEquals(-1, parsedUrl.getPort());
-    assertTrue(parsedUrl.getQueryParameters().isEmpty());
-  }
-
-  @Test
-  public void testParseUrlWithHostPortAndParams() throws URISyntaxException {
-    String url =
-        "jdbc:bigtable://localhost:8086/projects/my-project/instances/my-instance?param1=val1";
-    BigtableJdbcUrl parsedUrl = BigtableJdbcUrlParser.parse(url);
-
-    assertNotNull(parsedUrl);
-    assertEquals("my-project", parsedUrl.getProjectId());
-    assertEquals("my-instance", parsedUrl.getInstanceId());
-    assertEquals("localhost", parsedUrl.getHost());
-    assertEquals(8086, parsedUrl.getPort());
-    assertEquals(ImmutableMap.of("param1", "val1"), parsedUrl.getQueryParameters());
+    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
   }
 }

@@ -84,68 +84,22 @@ public class BigtableConnectionTest {
   @Test
   public void testValidClientCreation() throws SQLException, IOException {
     when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, null, 443))
+            "test-project", "test-instance", null))
         .thenReturn(mockDataClient);
     new BigtableConnection(baseURL, properties, null, mockClientFactory);
     verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, null, 443);
+        .createBigtableDataClient("test-project", "test-instance", null);
   }
 
   @Test
   public void testValidClientCreationWithAppProfile() throws SQLException, IOException {
     String url = baseURL + "?app_profile_id=test-profile";
     when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", "test-profile", null, 443))
+            "test-project", "test-instance", "test-profile"))
         .thenReturn(mockDataClient);
     new BigtableConnection(url, properties, null, mockClientFactory);
     verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", "test-profile", null, 443);
-  }
-
-  @Test
-  public void testValidClientCreationWithHostAndPort() throws SQLException, IOException {
-    String url = "jdbc:bigtable://localhost:8080/projects/test-project/instances/test-instance";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, "localhost", 8080))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, "localhost", 8080);
-  }
-
-  @Test
-  public void testValidClientCreationWithHost() throws SQLException, IOException {
-    String url = "jdbc:bigtable://localhost/projects/test-project/instances/test-instance";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, "localhost", 443))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, "localhost", 443);
-  }
-
-  @Test
-  public void testValidClientCreationWithHostPortAndAppProfile() throws SQLException, IOException {
-    String url =
-        "jdbc:bigtable://localhost:8080/projects/test-project/instances/test-instance?app_profile_id=test-profile";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", "test-profile", "localhost", 8080))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient(
-            "test-project", "test-instance", "test-profile", "localhost", 8080);
-  }
-
-  @Test
-  public void testValidClientCreationWithHostAndDefaultPort() throws SQLException, IOException {
-    String url = "jdbc:bigtable://localhost/projects/test-project/instances/test-instance";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, "localhost", 443))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, "localhost", 443);
+        .createBigtableDataClient("test-project", "test-instance", "test-profile");
   }
 
   @Test

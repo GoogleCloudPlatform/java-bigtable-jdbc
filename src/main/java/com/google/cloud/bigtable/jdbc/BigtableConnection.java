@@ -16,10 +16,6 @@
 
 package com.google.cloud.bigtable.jdbc;
 
-import com.google.cloud.bigtable.data.v2.BigtableDataClient;
-import com.google.cloud.bigtable.jdbc.client.BigtableClientFactoryImpl;
-import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
-import com.google.cloud.bigtable.jdbc.util.BigtableJdbcUrlParser;
 import java.io.IOException;
 import java.sql.Array;
 import java.sql.Blob;
@@ -46,8 +42,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.jdbc.client.BigtableClientFactoryImpl;
+import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
+import com.google.cloud.bigtable.jdbc.util.BigtableJdbcUrlParser;
+
 public class BigtableConnection implements Connection {
-  private final int DEFAULT_PORT = 443;
 
   private Map<String, Class<?>> typeMap = new HashMap<>();
   // The actual client, responsible for operations and communicates with Bigtable.
@@ -85,12 +85,6 @@ public class BigtableConnection implements Connection {
       Properties urlParams = new Properties();
       urlParams.setProperty("projectId", parsedUrl.getProjectId());
       urlParams.setProperty("instanceId", parsedUrl.getInstanceId());
-      if (parsedUrl.getHost() != null) {
-        urlParams.setProperty("host", parsedUrl.getHost());
-      }
-      if (parsedUrl.getPort() != -1) {
-        urlParams.setProperty("port", String.valueOf(parsedUrl.getPort()));
-      }
 
       for (Map.Entry<String, String> entry : parsedUrl.getQueryParameters().entrySet()) {
         String key = entry.getKey();
@@ -128,11 +122,8 @@ public class BigtableConnection implements Connection {
     String projectId = properties.getProperty("projectId");
     String instanceId = properties.getProperty("instanceId");
     String appProfileId = properties.getProperty("app_profile_id");
-    String host = properties.getProperty("host");
-    int port = Integer.parseInt(properties.getProperty("port", String.valueOf(DEFAULT_PORT)));
 
-    return this.bigtableClientFactory.createBigtableDataClient(
-        projectId, instanceId, appProfileId, host, port);
+    return this.bigtableClientFactory.createBigtableDataClient(projectId, instanceId, appProfileId);
   }
 
   private void checkClosed() throws SQLException {

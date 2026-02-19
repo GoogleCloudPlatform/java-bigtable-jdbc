@@ -28,9 +28,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.cloud.bigtable.data.v2.BigtableDataClient;
-import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
-import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,6 +36,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +44,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
+import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BigtableConnectionTest {
@@ -197,15 +199,13 @@ public class BigtableConnectionTest {
   }
 
   @Test
-  public void testIsValidWithNegativeTimeout() throws SQLException {
-    Connection connection = createConnection();
-    assertThrows(SQLException.class, () -> connection.isValid(-1));
-  }
-
-  @Test
-  public void testIsValidWithPositiveTimeout() throws SQLException {
+  public void testIsValidWithSetTimeout() throws SQLException {
     Connection connection = createConnection();
     assertTrue(connection.isValid(10));
+    assertNotNull(connection.getWarnings());
+    assertEquals(
+        "timeout is not supported in isValid and will be ignored.",
+         connection.getWarnings().getMessage());
   }
 
   @Test

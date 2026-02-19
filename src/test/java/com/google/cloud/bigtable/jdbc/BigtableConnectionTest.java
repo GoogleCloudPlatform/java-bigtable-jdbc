@@ -86,22 +86,46 @@ public class BigtableConnectionTest {
   @Test
   public void testValidClientCreation() throws SQLException, IOException {
     when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null))
+            "test-project", "test-instance", null, null))
         .thenReturn(mockDataClient);
     new BigtableConnection(baseURL, properties, null, mockClientFactory);
     verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null);
+        .createBigtableDataClient("test-project", "test-instance", null, null);
   }
 
   @Test
   public void testValidClientCreationWithAppProfile() throws SQLException, IOException {
     String url = baseURL + "?app_profile_id=test-profile";
     when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", "test-profile"))
+            "test-project", "test-instance", "test-profile", null))
         .thenReturn(mockDataClient);
     new BigtableConnection(url, properties, null, mockClientFactory);
     verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", "test-profile");
+        .createBigtableDataClient("test-project", "test-instance", "test-profile", null);
+  }
+
+  @Test
+  public void testValidClientCreationWithUniverseDomain() throws SQLException, IOException {
+    String url = baseURL + "?universe_domain=test-universe-domain";
+    when(mockClientFactory.createBigtableDataClient(
+            "test-project", "test-instance", null, "test-universe-domain"))
+        .thenReturn(mockDataClient);
+    new BigtableConnection(url, properties, null, mockClientFactory);
+    verify(mockClientFactory)
+        .createBigtableDataClient(
+            "test-project", "test-instance", null, "test-universe-domain");
+  }
+
+  @Test
+  public void testClientCreationWithEmptyUniverseDomain() throws SQLException, IOException {
+    String url = baseURL + "?universe_domain=";
+    when(mockClientFactory.createBigtableDataClient(
+            "test-project", "test-instance", null, ""))
+        .thenReturn(mockDataClient);
+    new BigtableConnection(url, properties, null, mockClientFactory);
+    verify(mockClientFactory)
+        .createBigtableDataClient(
+            "test-project", "test-instance", null, "");
   }
 
   @Test

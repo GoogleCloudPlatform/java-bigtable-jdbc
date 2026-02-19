@@ -83,7 +83,8 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
     return GoogleCredentials.getApplicationDefault();
   }
 
-  public BigtableDataClient createBigtableDataClient(String projectId, String instanceId, String appProfileId)
+  public BigtableDataClient createBigtableDataClient(
+      String projectId, String instanceId, String appProfileId, String universeDomain)
       throws IOException {
     BigtableDataSettings.Builder builder =
         BigtableDataSettings.newBuilder()
@@ -93,6 +94,10 @@ public class BigtableClientFactoryImpl implements IBigtableClientFactory {
 
     if (appProfileId != null) {
       builder.setAppProfileId(appProfileId);
+    }
+
+    if (universeDomain != null) {
+      builder.stubSettings().setUniverseDomain(universeDomain);
     }
 
     // Disable CSM and internal metrics to avoid OpenTelemetry dependencies which can cause

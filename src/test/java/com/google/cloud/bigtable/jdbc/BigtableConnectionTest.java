@@ -22,10 +22,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
 import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
 import java.io.IOException;
 import java.sql.Connection;
@@ -54,6 +58,18 @@ public class BigtableConnectionTest {
   @Before
   public void openMocks() {
     closeable = MockitoAnnotations.openMocks(this);
+
+    com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement mockPreparedStatement =
+        mock(com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement.class);
+    BoundStatement.Builder mockBoundStatementBuilder = mock(BoundStatement.Builder.class);
+    BoundStatement mockBoundStatement = mock(BoundStatement.class);
+    com.google.cloud.bigtable.data.v2.models.sql.ResultSet mockResultSet =
+        mock(com.google.cloud.bigtable.data.v2.models.sql.ResultSet.class);
+
+    when(mockDataClient.prepareStatement(anyString(), anyMap())).thenReturn(mockPreparedStatement);
+    when(mockPreparedStatement.bind()).thenReturn(mockBoundStatementBuilder);
+    when(mockBoundStatementBuilder.build()).thenReturn(mockBoundStatement);
+    when(mockDataClient.executeQuery(mockBoundStatement)).thenReturn(mockResultSet);
   }
 
   @After

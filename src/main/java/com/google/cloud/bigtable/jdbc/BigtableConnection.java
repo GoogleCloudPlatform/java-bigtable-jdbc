@@ -114,6 +114,9 @@ public class BigtableConnection implements Connection {
       connectionParams.putAll(urlParams);
       connectionParams.putAll(info);
       this.client = createBigtableDataClient(connectionParams);
+      // Test the connection by executing a simple query.
+      // This will help catch any issues with the connection
+      this.prepareStatement("select 1").executeQuery();
     } catch (java.net.URISyntaxException | IllegalArgumentException e) {
       throw new SQLException("Malformed JDBC URL: " + url, e);
     } catch (Exception e) {

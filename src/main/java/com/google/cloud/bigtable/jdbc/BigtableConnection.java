@@ -414,12 +414,11 @@ public class BigtableConnection implements Connection {
 
   @Override
   public boolean isValid(int timeout) throws SQLException {
-    if (timeout < 0) {
-      throw new SQLException("timeout cannot be negative");
-    }
     if (isClosed) {
       return false;
     }
+    SQLWarning warning = new SQLWarning("timeout is not supported in isValid and will be ignored.");
+    this.pushWarning(warning);
     try {
       validateConnection();
       return true;

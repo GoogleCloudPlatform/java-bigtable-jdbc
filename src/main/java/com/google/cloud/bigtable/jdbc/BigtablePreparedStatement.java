@@ -166,7 +166,8 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
     }
   }
 
-  private com.google.cloud.bigtable.data.v2.models.sql.ResultSet prepareQuery() throws SQLException {
+  private com.google.cloud.bigtable.data.v2.models.sql.ResultSet prepareQuery()
+      throws SQLException {
     if (!isCached) {
       cachedSql = SqlParser.replacePlaceholdersWithNamedParams(sql, parameters.size());
 

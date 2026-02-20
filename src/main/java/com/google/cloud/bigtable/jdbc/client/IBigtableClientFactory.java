@@ -16,9 +16,8 @@
 
 package com.google.cloud.bigtable.jdbc.client;
 
-import java.io.IOException;
-
 import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import java.io.IOException;
 
 /** The factory is responsible for the instantiation of the BigtableDataClient. */
 public interface IBigtableClientFactory {

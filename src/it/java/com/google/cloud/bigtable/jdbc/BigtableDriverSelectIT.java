@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,6 +35,7 @@ public class BigtableDriverSelectIT {
     String value = System.getProperty(key);
     return (value == null || value.isEmpty()) ? defaultValue : value;
   }
+
   private static final String PROJECT = getProperty("google.bigtable.project.id", "fakeProject");
   private static final String INSTANCE = getProperty("google.bigtable.instance.id", "fakeInstance");
   private static final String TABLE = getProperty("google.bigtable.table.id", "hotels");
@@ -65,7 +65,7 @@ public class BigtableDriverSelectIT {
   public void testInvalidConnection() throws Exception {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     String url =
-      String.format("jdbc:bigtable:/projects/%s/instances/%s", "fakeProject", "fakeInstance");
+        String.format("jdbc:bigtable:/projects/%s/instances/%s", "fakeProject", "fakeInstance");
     assertThrows(java.sql.SQLException.class, () -> DriverManager.getConnection(url));
   }
 
@@ -77,7 +77,7 @@ public class BigtableDriverSelectIT {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     try (Connection connection = DriverManager.getConnection(url);
         PreparedStatement statement = connection.prepareStatement(select)) {
-        statement.setBytes(1, "hotels#1#Basel#Hilton Basel#Luxury".getBytes());
+      statement.setBytes(1, "hotels#1#Basel#Hilton Basel#Luxury".getBytes());
       try (ResultSet rs = statement.executeQuery()) {
         assertTrue(rs.next());
         assertEquals("hotels#1#Basel#Hilton Basel#Luxury", new String(rs.getBytes("_key")));
@@ -93,7 +93,7 @@ public class BigtableDriverSelectIT {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     try (Connection connection = DriverManager.getConnection(url);
         PreparedStatement statement = connection.prepareStatement(select)) {
-        statement.setBytes(1, "1".getBytes());
+      statement.setBytes(1, "1".getBytes());
       try (ResultSet rs = statement.executeQuery()) {
         assertTrue(rs.next());
         assertEquals("hotels#1#Basel#Hilton Basel#Luxury", new String(rs.getBytes("_key")));
@@ -104,13 +104,16 @@ public class BigtableDriverSelectIT {
   @Test
   public void testSelectWithMultipleParams() throws Exception {
     String url = String.format("jdbc:bigtable:/projects/%s/instances/%s", PROJECT, INSTANCE);
-    String select = String.format("SELECT * FROM `%s` WHERE hotel_info['name'] = ? AND hotel_info['location'] = ?", TABLE);
+    String select =
+        String.format(
+            "SELECT * FROM `%s` WHERE hotel_info['name'] = ? AND hotel_info['location'] = ?",
+            TABLE);
 
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     try (Connection connection = DriverManager.getConnection(url);
         PreparedStatement statement = connection.prepareStatement(select)) {
-        statement.setBytes(1, "Hilton Basel".getBytes());
-        statement.setBytes(2, "Basel".getBytes());
+      statement.setBytes(1, "Hilton Basel".getBytes());
+      statement.setBytes(2, "Basel".getBytes());
       try (ResultSet rs = statement.executeQuery()) {
         assertTrue(rs.next());
         assertEquals("hotels#1#Basel#Hilton Basel#Luxury", new String(rs.getBytes("_key")));
@@ -126,7 +129,7 @@ public class BigtableDriverSelectIT {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     try (Connection connection = DriverManager.getConnection(url);
         PreparedStatement statement = connection.prepareStatement(select)) {
-        statement.setInt(1, 1);
+      statement.setInt(1, 1);
       try (ResultSet rs = statement.executeQuery()) {
         assertTrue(rs.next());
         assertEquals("Hilton Basel", new String(rs.getBytes("hotel_name")));
@@ -142,7 +145,7 @@ public class BigtableDriverSelectIT {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     try (Connection connection = DriverManager.getConnection(url);
         PreparedStatement statement = connection.prepareStatement(select)) {
-        statement.setInt(1, 1);
+      statement.setInt(1, 1);
       try (ResultSet rs = statement.executeQuery()) {
         assertTrue(rs.next());
         assertEquals("2024-04-20", rs.getDate("checkin_date").toString());
@@ -158,7 +161,7 @@ public class BigtableDriverSelectIT {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     try (Connection connection = DriverManager.getConnection(url);
         PreparedStatement statement = connection.prepareStatement(select)) {
-        statement.setInt(1, 1);
+      statement.setInt(1, 1);
       try (ResultSet rs = statement.executeQuery()) {
         assertTrue(rs.next());
         assertEquals("2024-04-20 00:00:00.0", rs.getTimestamp("checkin_date_time").toString());
@@ -166,7 +169,7 @@ public class BigtableDriverSelectIT {
     }
   }
 
-   @Test
+  @Test
   public void testSelectBooleanLogicalView() throws Exception {
     String url = String.format("jdbc:bigtable:/projects/%s/instances/%s", PROJECT, INSTANCE);
     String select = String.format("SELECT * FROM `%s` WHERE id = ?", "booking_view");
@@ -174,7 +177,7 @@ public class BigtableDriverSelectIT {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     try (Connection connection = DriverManager.getConnection(url);
         PreparedStatement statement = connection.prepareStatement(select)) {
-        statement.setInt(1, 1);
+      statement.setInt(1, 1);
       try (ResultSet rs = statement.executeQuery()) {
         assertTrue(rs.next());
         assertEquals(false, rs.getBoolean("booked"));

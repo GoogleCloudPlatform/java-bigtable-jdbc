@@ -28,6 +28,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
+import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -36,7 +39,6 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Properties;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,10 +46,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import com.google.cloud.bigtable.data.v2.BigtableDataClient;
-import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
-import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BigtableConnectionTest {
@@ -85,12 +83,10 @@ public class BigtableConnectionTest {
 
   @Test
   public void testValidClientCreation() throws SQLException, IOException {
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, null))
+    when(mockClientFactory.createBigtableDataClient("test-project", "test-instance", null, null))
         .thenReturn(mockDataClient);
     new BigtableConnection(baseURL, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, null);
+    verify(mockClientFactory).createBigtableDataClient("test-project", "test-instance", null, null);
   }
 
   @Test
@@ -112,20 +108,16 @@ public class BigtableConnectionTest {
         .thenReturn(mockDataClient);
     new BigtableConnection(url, properties, null, mockClientFactory);
     verify(mockClientFactory)
-        .createBigtableDataClient(
-            "test-project", "test-instance", null, "test-universe-domain");
+        .createBigtableDataClient("test-project", "test-instance", null, "test-universe-domain");
   }
 
   @Test
   public void testClientCreationWithEmptyUniverseDomain() throws SQLException, IOException {
     String url = baseURL + "?universe_domain=";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, ""))
+    when(mockClientFactory.createBigtableDataClient("test-project", "test-instance", null, ""))
         .thenReturn(mockDataClient);
     new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient(
-            "test-project", "test-instance", null, "");
+    verify(mockClientFactory).createBigtableDataClient("test-project", "test-instance", null, "");
   }
 
   @Test
@@ -229,7 +221,7 @@ public class BigtableConnectionTest {
     assertNotNull(connection.getWarnings());
     assertEquals(
         "timeout is not supported in isValid and will be ignored.",
-         connection.getWarnings().getMessage());
+        connection.getWarnings().getMessage());
   }
 
   @Test

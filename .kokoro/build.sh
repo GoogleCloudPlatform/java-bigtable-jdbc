@@ -52,7 +52,7 @@ test)
     RETURN_CODE=$?
     ;;
 lint)
-    mvn checkstyle:check -Pformat
+    mvn fmt:check checkstyle:check -Pformat
     RETURN_CODE=$?
     ;;
 javadoc)

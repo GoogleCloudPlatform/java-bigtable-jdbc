@@ -16,6 +16,10 @@
 
 package com.google.cloud.bigtable.jdbc;
 
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.jdbc.client.BigtableClientFactoryImpl;
+import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
+import com.google.cloud.bigtable.jdbc.util.BigtableJdbcUrlParser;
 import java.io.IOException;
 import java.sql.Array;
 import java.sql.Blob;
@@ -41,11 +45,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
-
-import com.google.cloud.bigtable.data.v2.BigtableDataClient;
-import com.google.cloud.bigtable.jdbc.client.BigtableClientFactoryImpl;
-import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
-import com.google.cloud.bigtable.jdbc.util.BigtableJdbcUrlParser;
 
 public class BigtableConnection implements Connection {
 
@@ -120,8 +119,7 @@ public class BigtableConnection implements Connection {
 
   private void validateConnection() throws SQLException {
     try (PreparedStatement statement = this.prepareStatement("select 1");
-      ResultSet rs = statement.executeQuery()) {
-    }
+        ResultSet rs = statement.executeQuery()) {}
   }
 
   BigtableDataClient createBigtableDataClient(Properties properties) throws IOException {

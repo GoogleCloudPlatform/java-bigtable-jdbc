@@ -155,8 +155,7 @@ public class BigtableClientFactoryImplTest {
 
     // First call should trigger load
     try {
-      factory.createBigtableDataClient(
-          "test-project", "test-instance", null, null);
+      factory.createBigtableDataClient("test-project", "test-instance", null, null);
     } catch (Exception e) {
       // Expected to fail with mock credentials
     }
@@ -164,8 +163,7 @@ public class BigtableClientFactoryImplTest {
 
     // Second call should NOT trigger load again
     try {
-      factory.createBigtableDataClient(
-          "test-project", "test-instance", null, null);
+      factory.createBigtableDataClient("test-project", "test-instance", null, null);
     } catch (Exception e) {
       // Expected to fail with mock credentials
     }

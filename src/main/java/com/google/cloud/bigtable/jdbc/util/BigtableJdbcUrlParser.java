@@ -136,9 +136,7 @@ public class BigtableJdbcUrlParser {
     private final ImmutableMap<String, String> queryParameters;
 
     public BigtableJdbcUrl(
-        String projectId,
-        String instanceId,
-        ImmutableMap<String, String> queryParameters) {
+        String projectId, String instanceId, ImmutableMap<String, String> queryParameters) {
       this.projectId = projectId;
       this.instanceId = instanceId;
       this.queryParameters = queryParameters;

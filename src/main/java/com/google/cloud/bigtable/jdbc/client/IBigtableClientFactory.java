@@ -21,7 +21,6 @@ import java.io.IOException;
 
 /** The factory is responsible for the instantiation of the BigtableDataClient. */
 public interface IBigtableClientFactory {
-  BigtableDataClient createBigtableDataClient(
-      String projectId, String instanceId, String appProfileId, String host, int port)
+  BigtableDataClient createBigtableDataClient(String projectId, String instanceId, String appProfileId)
       throws IOException;
 }

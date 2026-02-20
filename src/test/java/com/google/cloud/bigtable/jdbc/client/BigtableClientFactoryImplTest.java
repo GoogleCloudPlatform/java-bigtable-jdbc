@@ -48,7 +48,7 @@ public class BigtableClientFactoryImplTest {
     try {
       BigtableDataClient client =
           factory.createBigtableDataClient(
-              "test-project", "test-instance", "test-app-profile", null, -1);
+              "test-project", "test-instance", "test-app-profile");
       assertNotNull(client);
     } catch (Exception e) {
       // This is expected to fail without real credentials, but a null pointer exception would
@@ -140,51 +140,6 @@ public class BigtableClientFactoryImplTest {
   }
 
   @Test
-  public void testCreateBigtableDataClientWithEmulator() throws IOException {
-    Credentials credentials = mock(Credentials.class);
-    BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(credentials);
-    try {
-      BigtableDataClient client =
-          factory.createBigtableDataClient(
-              "test-project", "test-instance", null, "localhost", 8080);
-      assertNotNull(client);
-    } catch (Exception e) {
-      // This is expected to fail without real credentials, but a null pointer exception would
-      // indicate a problem.
-    }
-  }
-
-  @Test
-  public void testCreateBigtableDataClientWithEmulatorIp() throws IOException {
-    Credentials credentials = mock(Credentials.class);
-    BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(credentials);
-    try {
-      BigtableDataClient client =
-          factory.createBigtableDataClient(
-              "test-project", "test-instance", null, "127.0.0.1", 8080);
-      assertNotNull(client);
-    } catch (Exception e) {
-      // This is expected to fail without real credentials, but a null pointer exception would
-      // indicate a problem.
-    }
-  }
-
-  @Test
-  public void testCreateBigtableDataClientWithoutEmulator() throws IOException {
-    Credentials credentials = mock(Credentials.class);
-    BigtableClientFactoryImpl factory = new BigtableClientFactoryImpl(credentials);
-    try {
-      BigtableDataClient client =
-          factory.createBigtableDataClient(
-              "test-project", "test-instance", null, "bigtable.googleapis.com", 443);
-      assertNotNull(client);
-    } catch (Exception e) {
-      // This is expected to fail without real credentials, but a null pointer exception would
-      // indicate a problem.
-    }
-  }
-
-  @Test
   public void testLazyLoadCredentials() throws IOException {
     final Credentials mockCredentials = mock(Credentials.class);
     final int[] loadCount = {0};
@@ -201,7 +156,7 @@ public class BigtableClientFactoryImplTest {
     // First call should trigger load
     try {
       factory.createBigtableDataClient(
-          "test-project", "test-instance", null, "bigtable.googleapis.com", 443);
+          "test-project", "test-instance", null);
     } catch (Exception e) {
       // Expected to fail with mock credentials
     }
@@ -210,7 +165,7 @@ public class BigtableClientFactoryImplTest {
     // Second call should NOT trigger load again
     try {
       factory.createBigtableDataClient(
-          "test-project", "test-instance", null, "bigtable.googleapis.com", 443);
+          "test-project", "test-instance", null);
     } catch (Exception e) {
       // Expected to fail with mock credentials
     }

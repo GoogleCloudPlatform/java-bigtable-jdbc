@@ -36,7 +36,6 @@ public class BigtableDriverSelectIT {
     String value = System.getProperty(key);
     return (value == null || value.isEmpty()) ? defaultValue : value;
   }
-
   private static final String PROJECT = getProperty("google.bigtable.project.id", "fakeProject");
   private static final String INSTANCE = getProperty("google.bigtable.instance.id", "fakeInstance");
   private static final String TABLE = getProperty("google.bigtable.table.id", "hotels");
@@ -59,11 +58,6 @@ public class BigtableDriverSelectIT {
 
     try (Connection connection = DriverManager.getConnection(url)) {
       assertTrue(connection.isValid(0));
-      PreparedStatement statement = connection.prepareStatement("Select 42;");
-       try (ResultSet rs = statement.executeQuery()) {
-        assertTrue(rs.next());
-        assertEquals(42, rs.getInt(1));
-      }
     }
   }
 
@@ -72,13 +66,7 @@ public class BigtableDriverSelectIT {
     Class.forName("com.google.cloud.bigtable.jdbc.BigtableDriver");
     String url =
       String.format("jdbc:bigtable:/projects/%s/instances/%s", "fakeProject", "fakeInstance");
-;
-    try (Connection connection = DriverManager.getConnection(url)) {
-      // TODO: check in with ppl to see if we should execute the statement in isValid.
-      assertTrue(connection.isValid(0));
-      PreparedStatement statement = connection.prepareStatement("Select 42;");
-      assertThrows(java.sql.SQLException.class, () -> statement.executeQuery());
-    }
+    assertThrows(java.sql.SQLException.class, () -> DriverManager.getConnection(url));
   }
 
   @Test

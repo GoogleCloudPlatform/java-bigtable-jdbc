@@ -166,7 +166,7 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
     }
   }
 
-  private com.google.cloud.bigtable.data.v2.models.sql.ResultSet prepareQuery() {
+  private com.google.cloud.bigtable.data.v2.models.sql.ResultSet prepareQuery() throws SQLException {
     if (!isCached) {
       cachedSql = SqlParser.replacePlaceholdersWithNamedParams(sql, parameters.size());
 
@@ -179,6 +179,10 @@ public class BigtablePreparedStatement extends BigtableStatement implements Prep
 
       cachedPreparedStatement = client.prepareStatement(cachedSql, parameterTypes);
       isCached = true;
+    }
+
+    if (cachedPreparedStatement == null) {
+      throw new SQLException("Failed to prepare statement: " + sql);
     }
     BoundStatement.Builder bound = cachedPreparedStatement.bind();
 

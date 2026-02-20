@@ -22,11 +22,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.cloud.bigtable.data.v2.BigtableDataClient;
-import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -35,6 +36,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +44,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import com.google.cloud.bigtable.data.v2.BigtableDataClient;
+import com.google.cloud.bigtable.data.v2.models.sql.BoundStatement;
+import com.google.cloud.bigtable.jdbc.client.IBigtableClientFactory;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BigtableConnectionTest {
@@ -54,6 +60,18 @@ public class BigtableConnectionTest {
   @Before
   public void openMocks() {
     closeable = MockitoAnnotations.openMocks(this);
+
+    com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement mockPreparedStatement =
+        mock(com.google.cloud.bigtable.data.v2.models.sql.PreparedStatement.class);
+    BoundStatement.Builder mockBoundStatementBuilder = mock(BoundStatement.Builder.class);
+    BoundStatement mockBoundStatement = mock(BoundStatement.class);
+    com.google.cloud.bigtable.data.v2.models.sql.ResultSet mockResultSet =
+        mock(com.google.cloud.bigtable.data.v2.models.sql.ResultSet.class);
+
+    when(mockDataClient.prepareStatement(anyString(), anyMap())).thenReturn(mockPreparedStatement);
+    when(mockPreparedStatement.bind()).thenReturn(mockBoundStatementBuilder);
+    when(mockBoundStatementBuilder.build()).thenReturn(mockBoundStatement);
+    when(mockDataClient.executeQuery(mockBoundStatement)).thenReturn(mockResultSet);
   }
 
   @After
@@ -68,68 +86,22 @@ public class BigtableConnectionTest {
   @Test
   public void testValidClientCreation() throws SQLException, IOException {
     when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, null, 443))
+            "test-project", "test-instance", null))
         .thenReturn(mockDataClient);
     new BigtableConnection(baseURL, properties, null, mockClientFactory);
     verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, null, 443);
+        .createBigtableDataClient("test-project", "test-instance", null);
   }
 
   @Test
   public void testValidClientCreationWithAppProfile() throws SQLException, IOException {
     String url = baseURL + "?app_profile_id=test-profile";
     when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", "test-profile", null, 443))
+            "test-project", "test-instance", "test-profile"))
         .thenReturn(mockDataClient);
     new BigtableConnection(url, properties, null, mockClientFactory);
     verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", "test-profile", null, 443);
-  }
-
-  @Test
-  public void testValidClientCreationWithHostAndPort() throws SQLException, IOException {
-    String url = "jdbc:bigtable://localhost:8080/projects/test-project/instances/test-instance";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, "localhost", 8080))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, "localhost", 8080);
-  }
-
-  @Test
-  public void testValidClientCreationWithHost() throws SQLException, IOException {
-    String url = "jdbc:bigtable://localhost/projects/test-project/instances/test-instance";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, "localhost", 443))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, "localhost", 443);
-  }
-
-  @Test
-  public void testValidClientCreationWithHostPortAndAppProfile() throws SQLException, IOException {
-    String url =
-        "jdbc:bigtable://localhost:8080/projects/test-project/instances/test-instance?app_profile_id=test-profile";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", "test-profile", "localhost", 8080))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient(
-            "test-project", "test-instance", "test-profile", "localhost", 8080);
-  }
-
-  @Test
-  public void testValidClientCreationWithHostAndDefaultPort() throws SQLException, IOException {
-    String url = "jdbc:bigtable://localhost/projects/test-project/instances/test-instance";
-    when(mockClientFactory.createBigtableDataClient(
-            "test-project", "test-instance", null, "localhost", 443))
-        .thenReturn(mockDataClient);
-    new BigtableConnection(url, properties, null, mockClientFactory);
-    verify(mockClientFactory)
-        .createBigtableDataClient("test-project", "test-instance", null, "localhost", 443);
+        .createBigtableDataClient("test-project", "test-instance", "test-profile");
   }
 
   @Test
@@ -224,6 +196,24 @@ public class BigtableConnectionTest {
   public void testIsValid() throws SQLException {
     Connection connection = createConnection();
     assertTrue(connection.isValid(0));
+  }
+
+  @Test
+  public void testIsValidWithSetTimeout() throws SQLException {
+    Connection connection = createConnection();
+    assertTrue(connection.isValid(10));
+    assertNotNull(connection.getWarnings());
+    assertEquals(
+        "timeout is not supported in isValid and will be ignored.",
+         connection.getWarnings().getMessage());
+  }
+
+  @Test
+  public void testIsValidWhenQueryFails() throws SQLException {
+    Connection connection = createConnection();
+    when(mockDataClient.prepareStatement(anyString(), anyMap()))
+        .thenThrow(new RuntimeException("Query failed"));
+    assertFalse(connection.isValid(0));
   }
 
   @Test
@@ -399,7 +389,7 @@ public class BigtableConnectionTest {
     assertThrows(SQLException.class, connection::getTypeMap);
     assertThrows(SQLException.class, () -> connection.setTypeMap(new java.util.HashMap<>()));
     assertThrows(SQLException.class, connection::getHoldability);
-    assertThrows(SQLException.class, () -> connection.isValid(0));
+    assertFalse(connection.isValid(0));
   }
 
   @Test

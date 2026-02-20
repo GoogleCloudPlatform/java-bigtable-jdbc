@@ -128,8 +128,10 @@ public class BigtableConnection implements Connection {
     String projectId = properties.getProperty("projectId");
     String instanceId = properties.getProperty("instanceId");
     String appProfileId = properties.getProperty("app_profile_id");
+    String universeDomain = properties.getProperty("universe_domain");
 
-    return this.bigtableClientFactory.createBigtableDataClient(projectId, instanceId, appProfileId);
+    return this.bigtableClientFactory.createBigtableDataClient(
+        projectId, instanceId, appProfileId, universeDomain);
   }
 
   private void checkClosed() throws SQLException {

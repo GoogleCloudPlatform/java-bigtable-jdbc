@@ -48,7 +48,7 @@ public class BigtableClientFactoryImplTest {
     try {
       BigtableDataClient client =
           factory.createBigtableDataClient(
-              "test-project", "test-instance", "test-app-profile");
+              "test-project", "test-instance", "test-app-profile", null);
       assertNotNull(client);
     } catch (Exception e) {
       // This is expected to fail without real credentials, but a null pointer exception would
@@ -156,7 +156,7 @@ public class BigtableClientFactoryImplTest {
     // First call should trigger load
     try {
       factory.createBigtableDataClient(
-          "test-project", "test-instance", null);
+          "test-project", "test-instance", null, null);
     } catch (Exception e) {
       // Expected to fail with mock credentials
     }
@@ -165,7 +165,7 @@ public class BigtableClientFactoryImplTest {
     // Second call should NOT trigger load again
     try {
       factory.createBigtableDataClient(
-          "test-project", "test-instance", null);
+          "test-project", "test-instance", null, null);
     } catch (Exception e) {
       // Expected to fail with mock credentials
     }

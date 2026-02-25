@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/compare/v0.2.0...v0.2.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* update documentation ([#49](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/issues/49)) ([4fa8249](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/commit/4fa8249a65251e8978b0a9feb50d007dbc9b8db1))
+
 ## [0.2.0](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/compare/v0.1.0...v0.2.0) (2026-02-24)
 
 

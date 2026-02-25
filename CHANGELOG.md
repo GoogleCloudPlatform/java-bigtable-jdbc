@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/compare/v0.2.0...v1.0.0) (2026-02-25)
+
+
+### Bug Fixes
+
+* more roburst url parsing & validation ([3fbdfdf](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/commit/3fbdfdfe606cfc5f9cea1ee00f0861016012ac0d))
+* update documentation ([#49](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/issues/49)) ([4fa8249](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/commit/4fa8249a65251e8978b0a9feb50d007dbc9b8db1))
+
 ## [0.2.0](https://github.com/GoogleCloudPlatform/java-bigtable-jdbc/compare/v0.1.0...v0.2.0) (2026-02-24)
 
 

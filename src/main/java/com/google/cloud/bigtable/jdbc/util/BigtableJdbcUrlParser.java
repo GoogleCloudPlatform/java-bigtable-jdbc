@@ -19,6 +19,8 @@ package com.google.cloud.bigtable.jdbc.util;
 import com.google.common.collect.ImmutableMap;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,7 +63,7 @@ public class BigtableJdbcUrlParser {
               JDBC_SCHEME, jdbcUri.getScheme()));
     }
 
-    String schemeSpecificPart = jdbcUri.getSchemeSpecificPart();
+    String schemeSpecificPart = jdbcUri.getRawSchemeSpecificPart();
     // schemeSpecificPart is never null
     if (!schemeSpecificPart.startsWith(BIGTABLE_SSP_PREFIX)) {
       throw new IllegalArgumentException(
@@ -102,31 +104,74 @@ public class BigtableJdbcUrlParser {
     String projectId = matcher.group(1);
     String instanceId = matcher.group(2);
 
+    validateProjectId(projectId);
+    validateInstanceId(instanceId);
+
     // Extract query parameters
-    ImmutableMap<String, String> queryParameters = parseQueryParameters(internalUri.getQuery());
+    ImmutableMap<String, String> queryParameters = parseQueryParameters(internalUri.getRawQuery());
 
     return new BigtableJdbcUrl(projectId, instanceId, queryParameters);
+  }
+
+  // https://docs.cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin
+  private static void validateProjectId(String projectId) {
+    if (projectId.length() < 6 || projectId.length() > 30) {
+      throw new IllegalArgumentException("Project ID must be between 6 and 30 characters.");
+    }
+    if (!projectId.matches("^[a-z][a-z0-9-]*[a-z0-9]$")) {
+      throw new IllegalArgumentException(
+          "Project ID must start with a letter, end with a letter or number, "
+              + "and contain only lowercase letters, numbers, and hyphens.");
+    }
+    if (projectId.contains("google") || projectId.contains("ssl")) {
+      throw new IllegalArgumentException("Project ID cannot contain 'google' or 'ssl'.");
+    }
+    if (projectId.contains("undefined") || projectId.contains("null")) {
+      // Following recommendation as a strict check
+      throw new IllegalArgumentException("Project ID should not contain 'undefined' or 'null'.");
+    }
+  }
+
+  private static void validateInstanceId(String instanceId) {
+    if (instanceId.length() < 6 || instanceId.length() > 33) {
+      throw new IllegalArgumentException("Instance ID must be between 6 and 33 characters.");
+    }
+    if (!instanceId.matches("^[a-z][a-z0-9-]*[a-z0-9]$")) {
+      throw new IllegalArgumentException(
+          "Instance ID must start with a lowercase letter, end with a letter or number, "
+              + "and contain only lowercase letters, numbers, and hyphens.");
+    }
   }
 
   private static ImmutableMap<String, String> parseQueryParameters(String query) {
     if (query == null || query.isEmpty()) {
       return ImmutableMap.of();
     }
-    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+    Map<String, String> params = new LinkedHashMap<>();
     for (String param : query.split("&")) {
       String[] pair = param.split("=", MAX_QUERY_PARAMS);
       if (pair.length > 0) {
-        String key = pair[0];
-        String value = pair.length == MAX_QUERY_PARAMS ? pair[1] : "";
         try {
-          builder.put(key, value);
+          String key =
+              java.net.URLDecoder.decode(pair[0], java.nio.charset.StandardCharsets.UTF_8.name());
+          String value =
+              pair.length == MAX_QUERY_PARAMS
+                  ? java.net.URLDecoder.decode(
+                      pair[1], java.nio.charset.StandardCharsets.UTF_8.name())
+                  : "";
+          if (params.containsKey(key)) {
+            throw new IllegalArgumentException("Duplicate query parameter: " + key);
+          }
+          params.put(key, value);
+        } catch (java.io.UnsupportedEncodingException e) {
+          throw new RuntimeException("UTF-8 not supported", e);
         } catch (IllegalArgumentException e) {
           throw new IllegalArgumentException(
-              String.format("Duplicate query parameter '%s' found.", key), e);
+              String.format("Duplicate or malformed query parameter: %s", param), e);
         }
       }
     }
-    return builder.build();
+    return ImmutableMap.copyOf(params);
   }
 
   /** Data class to hold the parsed components of the Bigtable JDBC URL. */

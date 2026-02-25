@@ -1031,7 +1031,7 @@ public class BigtableResultSet implements java.sql.ResultSet {
 
   @Override
   public RowId getRowId(String columnLabel) throws SQLException {
-    throw new SQLFeatureNotSupportedException(" is not supported");
+    throw new SQLFeatureNotSupportedException("getRowId is not supported");
   }
 
   @Override
@@ -1192,7 +1192,7 @@ public class BigtableResultSet implements java.sql.ResultSet {
 
   @Override
   public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
-    throw new SQLFeatureNotSupportedException(" is not supported");
+    throw new SQLFeatureNotSupportedException("updateNClob is not supported");
   }
 
   @Override
@@ -1277,7 +1277,7 @@ public class BigtableResultSet implements java.sql.ResultSet {
 
   @Override
   public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-    throw new SQLFeatureNotSupportedException(" is not supported");
+    throw new SQLFeatureNotSupportedException("getObject is not supported");
   }
 
   @Override

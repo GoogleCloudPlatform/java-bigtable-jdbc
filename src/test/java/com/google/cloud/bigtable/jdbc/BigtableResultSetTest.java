@@ -21,8 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -332,6 +332,17 @@ public class BigtableResultSetTest {
   }
 
   @Test
+  public void testGetRowId() throws SQLException {
+    SQLFeatureNotSupportedException e1 =
+        assertThrows(SQLFeatureNotSupportedException.class, () -> resultSet.getRowId(1));
+    assertEquals("getRowId is not supported", e1.getMessage());
+
+    SQLFeatureNotSupportedException e2 =
+        assertThrows(SQLFeatureNotSupportedException.class, () -> resultSet.getRowId("col1"));
+    assertEquals("getRowId is not supported", e2.getMessage());
+  }
+
+  @Test
   public void testUnsupportedFeatures() {
     assertUnsupported(() -> resultSet.getBigDecimal(1, 1));
     assertUnsupported(() -> resultSet.getTime(1));
@@ -398,14 +409,7 @@ public class BigtableResultSetTest {
   }
 
   private void assertUnsupported(SQLRunnable runnable) {
-    try {
-      runnable.run();
-      fail("Expected SQLFeatureNotSupportedException");
-    } catch (SQLFeatureNotSupportedException e) {
-      // expected
-    } catch (SQLException e) {
-      fail("Expected SQLFeatureNotSupportedException, but got " + e.getClass().getName());
-    }
+    assertThrows(SQLFeatureNotSupportedException.class, runnable::run);
   }
 
   @FunctionalInterface

@@ -394,7 +394,7 @@ public class BigtableConnection implements Connection {
 
   @Override
   public Clob createClob() throws SQLException {
-    throw new SQLFeatureNotSupportedException(" is not supported");
+    throw new SQLFeatureNotSupportedException("createClob is not supported");
   }
 
   @Override

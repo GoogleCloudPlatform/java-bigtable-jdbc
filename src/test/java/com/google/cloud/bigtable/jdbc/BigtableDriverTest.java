@@ -68,12 +68,8 @@ public class BigtableDriverTest {
   public void testConnectWithInvalidURL() {
     String invalidUrl = "jdbc:invalid-driver:/projects/demo/instances/test";
     Properties props = new Properties();
-    try {
-      driver.connect(invalidUrl, props);
-      fail("Expected SQLException to be thrown due to invalid URL");
-    } catch (SQLException e) {
-      assertTrue(e.getMessage().contains("Does not start with jdbc:bigtable:/"));
-    }
+    SQLException e = assertThrows(SQLException.class, () -> driver.connect(invalidUrl, props));
+    assertTrue(e.getMessage().contains("Does not start with jdbc:bigtable:/"));
   }
 
   @Test

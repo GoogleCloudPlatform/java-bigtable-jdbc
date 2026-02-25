@@ -286,6 +286,16 @@ public class BigtableConnectionTest {
   }
 
   @Test
+  public void testCreateClob() throws SQLException {
+    Connection connection = createConnection();
+    assertThrows(
+        SQLFeatureNotSupportedException.class,
+        () -> {
+          connection.createClob();
+        });
+  }
+
+  @Test
   public void testUnsupportedFeatures() {
     assertThrows(
         SQLFeatureNotSupportedException.class,

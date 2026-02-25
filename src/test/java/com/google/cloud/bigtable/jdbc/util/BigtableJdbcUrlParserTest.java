@@ -45,18 +45,21 @@ public class BigtableJdbcUrlParserTest {
 
   @Test
   public void testParseUrlWithDuplicateParameters() {
-    String url = "jdbc:bigtable:/projects/test-proj/instances/test-inst?multi=a&multi=b&single=c";
-    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+    String url =
+        "jdbc:bigtable:/projects/test-project/instances/test-instance?multi=a&multi=b&single=c";
+    IllegalArgumentException e =
+        assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+    assertTrue(e.getMessage().contains("Duplicate or malformed query parameter: multi=b"));
   }
 
   @Test
   public void testParseValidUrlWithoutParameters() throws URISyntaxException {
-    String url = "jdbc:bigtable:/projects/no-params/instances/inst1";
+    String url = "jdbc:bigtable:/projects/no-params-project/instances/instance1";
     BigtableJdbcUrl parsedUrl = BigtableJdbcUrlParser.parse(url);
 
     assertNotNull(parsedUrl);
-    assertEquals("no-params", parsedUrl.getProjectId());
-    assertEquals("inst1", parsedUrl.getInstanceId());
+    assertEquals("no-params-project", parsedUrl.getProjectId());
+    assertEquals("instance1", parsedUrl.getInstanceId());
     assertTrue(parsedUrl.getQueryParameters().isEmpty());
   }
 
@@ -67,19 +70,19 @@ public class BigtableJdbcUrlParserTest {
 
   @Test
   public void testParseInvalidScheme() {
-    String url = "jdbc:mysql:/projects/proj/instances/inst";
+    String url = "jdbc:mysql:/projects/project-id/instances/instance-id";
     assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
   }
 
   @Test
   public void testParseInvalidPathStructureExtraPath() {
-    String url = "jdbc:bigtable:/projects/proj/instances/inst/extra";
+    String url = "jdbc:bigtable:/projects/project-id/instances/instance-id/extra";
     assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
   }
 
   @Test
   public void testParseInvalidPathStructure() {
-    String url = "jdbc:bigtable:/project/proj/instance/inst";
+    String url = "jdbc:bigtable:/project/project-id/instance/instance-id";
     assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
   }
 
@@ -134,6 +137,61 @@ public class BigtableJdbcUrlParserTest {
   public void testParseUrlWithMalformedPath() {
     String url = "jdbc:bigtable:/projects/my-project/my-instance";
     assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+  }
+
+  @Test
+  public void testParseUrlWithEncodedSpacesInQuery() throws URISyntaxException {
+    String url =
+        "jdbc:bigtable:/projects/my-project/instances/my-instance?app_profile_id=val%20with%20spaces";
+    BigtableJdbcUrl parsedUrl = BigtableJdbcUrlParser.parse(url);
+    assertEquals("val with spaces", parsedUrl.getQueryParameters().get("app_profile_id"));
+  }
+
+  @Test
+  public void testParseUrlWithEncodedHyphenInPath() throws URISyntaxException {
+    String url = "jdbc:bigtable:/projects/my%2Dproject/instances/my%2Dinstance";
+    BigtableJdbcUrl parsedUrl = BigtableJdbcUrlParser.parse(url);
+    assertEquals("my-project", parsedUrl.getProjectId());
+    assertEquals("my-instance", parsedUrl.getInstanceId());
+  }
+
+  @Test
+  public void testParseUrlWithInvalidCharactersInPath() {
+    String url = "jdbc:bigtable:/projects/my_project/instances/my_instance";
+    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+  }
+
+  @Test
+  public void testParseUrlWithTooShortProjectId() {
+    String url = "jdbc:bigtable:/projects/proj1/instances/my-instance";
+    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+  }
+
+  @Test
+  public void testParseUrlWithTooLongProjectId() {
+    String url = "jdbc:bigtable:/projects/this-project-id-is-too-long-12345/instances/my-instance";
+    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+  }
+
+  @Test
+  public void testParseUrlWithRestrictedProjectId() {
+    String url = "jdbc:bigtable:/projects/my-google-project/instances/my-instance";
+    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+  }
+
+  @Test
+  public void testParseUrlWithProjectIdEndingInHyphen() {
+    String url = "jdbc:bigtable:/projects/my-project-/instances/my-instance";
+    assertThrows(IllegalArgumentException.class, () -> BigtableJdbcUrlParser.parse(url));
+  }
+
+  @Test
+  public void testParseUrlWithSpecialCharactersInQuery() throws URISyntaxException {
+    String url =
+        "jdbc:bigtable:/projects/project-id/instances/instance-id?app_profile_id=val+with+plus&universe_domain=foo%26bar";
+    BigtableJdbcUrl parsedUrl = BigtableJdbcUrlParser.parse(url);
+    assertEquals("val with plus", parsedUrl.getQueryParameters().get("app_profile_id"));
+    assertEquals("foo&bar", parsedUrl.getQueryParameters().get("universe_domain"));
   }
 
   @Test
